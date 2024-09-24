@@ -1,0 +1,6 @@
+@Hephaestus.Sample.AspNet_HostAddress = http://localhost:5198
+
+GET {{Hephaestus.Sample.AspNet_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

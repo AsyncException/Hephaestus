@@ -1,0 +1,48 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35209.166
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hephaestus", "src\Hephaestus\Hephaestus.csproj", "{036FBC61-9D42-421E-A964-2E359AECD0E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hephaestus.Sample.Hosting", "samples\Hephaestus.Sample.Hosting\Hephaestus.Sample.Hosting.csproj", "{4A82D42B-93A7-43F4-8A0C-272E417DA246}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hephaestus.Sample.Module.AuditLog.Hosting", "samples\Hephaestus.Sample.Module.AuditLog.Hosting\Hephaestus.Sample.Module.AuditLog.Hosting.csproj", "{D46FF852-A2F5-45FE-88D7-ABC738D39197}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hephaestus.Sample.AspNet", "samples\Hephaestus.Sample.AspNet\Hephaestus.Sample.AspNet.csproj", "{1A91E5D1-4998-4F41-B49A-48B3DB2427AE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hephaestus.Sample.Module.AuditLog.AspNet", "samples\Hephaestus.Sample.Module.AuditLog.AspNet\Hephaestus.Sample.Module.AuditLog.AspNet.csproj", "{3757B4D9-CA2F-4B78-8F04-2460610CFB76}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{036FBC61-9D42-421E-A964-2E359AECD0E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{036FBC61-9D42-421E-A964-2E359AECD0E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{036FBC61-9D42-421E-A964-2E359AECD0E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{036FBC61-9D42-421E-A964-2E359AECD0E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A82D42B-93A7-43F4-8A0C-272E417DA246}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A82D42B-93A7-43F4-8A0C-272E417DA246}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A82D42B-93A7-43F4-8A0C-272E417DA246}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A82D42B-93A7-43F4-8A0C-272E417DA246}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D46FF852-A2F5-45FE-88D7-ABC738D39197}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D46FF852-A2F5-45FE-88D7-ABC738D39197}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D46FF852-A2F5-45FE-88D7-ABC738D39197}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D46FF852-A2F5-45FE-88D7-ABC738D39197}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A91E5D1-4998-4F41-B49A-48B3DB2427AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A91E5D1-4998-4F41-B49A-48B3DB2427AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A91E5D1-4998-4F41-B49A-48B3DB2427AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A91E5D1-4998-4F41-B49A-48B3DB2427AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3757B4D9-CA2F-4B78-8F04-2460610CFB76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3757B4D9-CA2F-4B78-8F04-2460610CFB76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3757B4D9-CA2F-4B78-8F04-2460610CFB76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3757B4D9-CA2F-4B78-8F04-2460610CFB76}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = 6c44f59b-8cc1-4391-81d0-70aa03b1f946
+	EndGlobalSection
+EndGlobal

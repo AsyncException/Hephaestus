@@ -1,0 +1,11 @@
+﻿{
+  "ConnectionStrings": {
+    "Default": "Data Source=Application.db"
+  },
+  "Discord": {
+    "Token": "Enter bot token here",
+    "Server": "Server id when SingleServerMode is enabled",
+    "SingleServerMode": false,
+    "SkipEventIntentCheck": false
+  }
+}
