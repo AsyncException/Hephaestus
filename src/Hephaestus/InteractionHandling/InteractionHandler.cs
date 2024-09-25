@@ -12,7 +12,7 @@ namespace Hephaestus.InteractionHandling;
 public sealed class InteractionHandler(
     DiscordSocketClient client,
     IServiceProvider service_provider,
-    DiscordConfiguration configuration,
+    HephaestusConfiguration configuration,
     ILogger<InteractionHandler> logger,
     InteractionService interaction_service,
     IEnumerable<IAssemblyProvider> assembly_providers
@@ -20,7 +20,7 @@ public sealed class InteractionHandler(
 {
     private readonly DiscordSocketClient client = client;
     private readonly ILogger<InteractionHandler> logger = logger;
-    private readonly DiscordConfiguration configuration = configuration;
+    private readonly HephaestusConfiguration configuration = configuration;
     private readonly IServiceProvider service_provider = service_provider;
     private readonly InteractionService interaction_service = interaction_service;
     private readonly IEnumerable<IAssemblyProvider> assembly_providers = assembly_providers;

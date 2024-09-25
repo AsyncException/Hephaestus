@@ -12,14 +12,14 @@ internal sealed class BootStrapper(
     DiscordSocketClient client,
     EventSubscriptionHandler event_handler,
     ILogger<BootStrapper> logger,
-    DiscordConfiguration configuration,
+    HephaestusConfiguration configuration,
     InteractionHandler interaction_handler
 ) : IHostedService
 {
     private readonly DiscordSocketClient client = client;
     private readonly ILogger<BootStrapper> logger = logger;
     private readonly EventSubscriptionHandler event_handler = event_handler;
-    private readonly DiscordConfiguration configuration = configuration;
+    private readonly HephaestusConfiguration configuration = configuration;
     private readonly InteractionHandler interaction_handler = interaction_handler;
 
     public async Task StartAsync(CancellationToken cancellation_token) {

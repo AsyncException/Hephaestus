@@ -4,12 +4,13 @@ using Hephaestus.Sample.Module.AuditLog.AspNet;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.AddHephaestus(() => new() {
-    GatewayIntents = Discord.GatewayIntents.AllUnprivileged,
-    MessageCacheSize = 100,
-    AuditLogCacheSize = 100,
-});
+builder.Configuration.AddJsonFile("appsettings.json", false);
 
+#if DEBUG
+builder.Configuration.AddUserSecrets<Program>();
+#endif
+
+builder.AddHephaestus();
 builder.AddHephaestusModule<AssemblyProvider>();
 
 builder.Services.AddControllers();

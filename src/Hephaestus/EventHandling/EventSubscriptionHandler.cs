@@ -5,12 +5,11 @@ using System.Reflection;
 
 namespace Hephaestus.EventHandling;
 
-public sealed class EventSubscriptionHandler(DiscordSocketClient client, DiscordConfiguration configuration, DiscordSocketConfig discord_socket_config, IServiceProvider services)
+public sealed class EventSubscriptionHandler(DiscordSocketClient client, HephaestusConfiguration configuration, IServiceProvider services)
 {
     private readonly DiscordSocketClient client = client;
     private readonly IServiceProvider services = services;
-    private readonly DiscordConfiguration configuration = configuration;
-    private readonly DiscordSocketConfig discord_socket_config = discord_socket_config;
+    private readonly HephaestusConfiguration configuration = configuration;
 
     public Task InitiaizeAsync() {
         foreach (Type handler_type in new TypeFinder<IEventHandler>().IsAbstract().Inherits<IEventHandler>().HasAttribute<EventHandlerAttribute>().Resolve()) {
@@ -26,7 +25,7 @@ public sealed class EventSubscriptionHandler(DiscordSocketClient client, Discord
         using IServiceScope scope = services.CreateScope();
         IEventHandler[] handlers = scope.ServiceProvider.GetKeyedServices<IEventHandler>(event_attribute.EventType).ToArray();
         if (handlers.Length > 0) {
-            if (!configuration.SkipEventIntentCheck && !event_attribute.Intent.Any(e => discord_socket_config.GatewayIntents.HasFlag(e))) {
+            if (!configuration.SkipEventIntentCheck && !event_attribute.Intent.Any(e => configuration.GatewayIntents.HasFlag(e))) {
                 throw new Exception($"Event subscriber found for event {event_attribute.EventType} but required intents are not present. Require one of: {string.Join(',', event_attribute.Intent)}");
             }
 

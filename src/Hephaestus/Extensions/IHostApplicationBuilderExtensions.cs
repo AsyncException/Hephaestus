@@ -32,26 +32,17 @@ public static class IHostApplicationBuilderExtensions
     ///
     /// <param name="builder"></param>
     /// <returns></returns>
-    public static IHostApplicationBuilder AddHephaestus(this IHostApplicationBuilder builder, Func<DiscordSocketConfig>? configSetup = null) {
-        builder.ConfigureConfiguration();
+    public static IHostApplicationBuilder AddHephaestus(this IHostApplicationBuilder builder, Action<DiscordSocketConfig>? configurationSetup = null) {
         builder.ConfigureLogging();
         builder.ConfigureServices();
-        builder.Services.AddOption<DiscordConfiguration>("Discord");
-        builder.Services.AddTransient(provider => configSetup?.Invoke() ?? new());
 
-        return builder;
-    }
+        //Add configuration
 
-    /// <summary>
-    /// Setup the configuration to use the appsettings.json file and if debugging also adds the user secrets
-    /// </summary>
-    /// <param name="builder"></param>
-    /// <returns></returns>
-    private static IHostApplicationBuilder ConfigureConfiguration(this IHostApplicationBuilder builder) {
-        builder.Configuration.AddJsonFile("appsettings.json", false);
-#if DEBUG
-        builder.Configuration.AddUserSecrets(Assembly.GetEntryAssembly() ?? throw new Exception("Entry assembly is null"));
-#endif
+        builder.Services.AddTransient<HephaestusConfiguration>((services) => {
+            HephaestusConfiguration config = services.GetRequiredService<IConfiguration>().GetSection("Hephaestus").Get<HephaestusConfiguration>() ?? new();
+            configurationSetup?.Invoke(config);
+            return config;
+        });
 
         return builder;
     }
@@ -86,8 +77,9 @@ public static class IHostApplicationBuilderExtensions
         builder.Services.AddSerilog();
         builder.Services.AddHostedService<BootStrapper>();
         builder.Services.AddSingleton(provider => {
-            DiscordSocketClient client = new(provider.GetRequiredService<DiscordSocketConfig>());
+            HephaestusConfiguration config = provider.GetRequiredService<HephaestusConfiguration>();
             ILogger<DiscordSocketClient> logger = provider.GetRequiredService<ILogger<DiscordSocketClient>>();
+            DiscordSocketClient client = new(config);
 
             client.Log += logger.LogAsync;
 
@@ -114,8 +106,8 @@ public static class IHostApplicationBuilderExtensions
 
         foreach (Type eventHandler in new TypeFinder<T>().IsNotAbstract().Inherits<IEventHandler>().HasAttribute<EventHandlerAttribute>().Resolve()) {
             EventHandlerAttribute attribute = eventHandler.GetCustomAttribute<EventHandlerAttribute>() ?? throw new Exception("Event attribute not found.");
-            host_builder.Services.AddKeyedTransient(typeof(IEventHandler), attribute.EventType, eventHandler);
             host_builder.Services.AddTransient(typeof(IEventHandler), eventHandler);
+            host_builder.Services.AddKeyedTransient(typeof(IEventHandler), attribute.EventType, eventHandler);
         }
 
         return host_builder;
