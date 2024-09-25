@@ -13,10 +13,7 @@ public sealed class EventSubscriptionHandler(DiscordSocketClient client, Discord
     private readonly DiscordSocketConfig discord_socket_config = discord_socket_config;
 
     public Task InitiaizeAsync() {
-        //TODO: replace the type getting with:
-        //new TypeFinder<IEventHandler>().IsAbstract().Inherits<IEventHandler>().HasAttribute<EventHandlerAttribute>().Resolve();
-        IEnumerable<Type> event_handlers = typeof(IEventHandler).Assembly.GetTypes().Where(t => t.IsAbstract && t.GetCustomAttribute<EventHandlerAttribute>() != null);
-        foreach (Type handler_type in event_handlers) {
+        foreach (Type handler_type in new TypeFinder<IEventHandler>().IsAbstract().Inherits<IEventHandler>().HasAttribute<EventHandlerAttribute>().Resolve()) {
             MethodInfo method_info = handler_type.GetRuntimeMethod("MapParameters", [typeof(DiscordSocketClient), typeof(Func<IEventParameters, Task>)]) ?? throw new Exception("Type is missing MapParameters method");
             EventHandlerAttribute attribute = handler_type.GetCustomAttribute<EventHandlerAttribute>() ?? throw new Exception("Type does not have an EventHandlerAttribute");
             Subscribe(attribute, (client, func) => method_info.Invoke(null, [client, func]));

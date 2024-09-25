@@ -112,10 +112,7 @@ public static class IHostApplicationBuilderExtensions
         new T().OptionalModules(host_builder);
         host_builder.Services.AddSingleton<IAssemblyProvider, T>();
 
-        //TODO: replace GetEventHandlers with the following:
-        //new TypeFinder(typeof(T).Assembly).IsNotAbstract().Inherits<IEventHandler>().HasAttribute<EventHandlerAttribute>().Resolve();
-
-        foreach (Type eventHandler in GetEventHandlers(typeof(T).Assembly)) {
+        foreach (Type eventHandler in new TypeFinder<T>().IsNotAbstract().Inherits<IEventHandler>().HasAttribute<EventHandlerAttribute>().Resolve()) {
             EventHandlerAttribute attribute = eventHandler.GetCustomAttribute<EventHandlerAttribute>() ?? throw new Exception("Event attribute not found.");
             host_builder.Services.AddKeyedTransient(typeof(IEventHandler), attribute.EventType, eventHandler);
             host_builder.Services.AddTransient(typeof(IEventHandler), eventHandler);
@@ -123,6 +120,4 @@ public static class IHostApplicationBuilderExtensions
 
         return host_builder;
     }
-
-    private static IEnumerable<Type> GetEventHandlers(Assembly assembly) => assembly.GetTypes().Where(type => type.IsAssignableTo(typeof(IEventHandler)) && !type.IsAbstract);
 }
