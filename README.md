@@ -34,10 +34,10 @@ using Hephaestus
 Add Hephaestus services and discord configuration
 ```cs
 HostApplicationBuilder builder = Host.CreateApplicationBuilder();
-builder.AddHephaestus(() => new() {
-    GatewayIntents = GatewayIntents.AllUnprivileged,
-    MessageCacheSize = 100,
-    AuditLogCacheSize = 100
+builder.AddHephaestus((config) => {
+    config.GatewayIntents = GatewayIntents.AllUnprivileged;
+    config.MessageCacheSize = 100;
+    config.AuditLogCacheSize = 100;
 });
 ```
 
