@@ -122,5 +122,4 @@ public class AuditLogMonitor(ILogger<AuditLogMonitor> logger) : AuditLogCreatedH
 ```
 
 ## License
-Hephaestus is licensed under the [MIT License](https://github.com/AsyncException/Hephaestus?tab=MIT-1-ov-file). InteractionModuleBase<SocketInteractionContext>
-
+Hephaestus is licensed under the [MIT License](https://github.com/AsyncException/Hephaestus?tab=MIT-1-ov-file).
