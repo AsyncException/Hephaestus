@@ -1,11 +1,11 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
 using Discord.Rest;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
-using Hephaestus.Models;
+using Discord.WebSocket;
 using Hephaestus.Extensions;
+using Hephaestus.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Hephaestus.InteractionHandling;
 
@@ -32,13 +32,8 @@ public sealed class InteractionHandler(
     public async Task InitializeAsync() {
         client.Ready += ReadyAsync;
         interaction_service.Log += logger.LogAsync;
-        foreach (IAssemblyProvider provider in assembly_providers) {
-            using (IServiceScope scope = service_provider.CreateScope()) {
-                await interaction_service.AddModulesAsync(provider.Assembly, scope.ServiceProvider);
-            }
-        }
-
         client.InteractionCreated += HandleInteraction;
+        await InitializeModules();
     }
 
     /// <summary>
@@ -46,23 +41,7 @@ public sealed class InteractionHandler(
     /// </summary>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    private async Task ReadyAsync() {
-        if (configuration.SingleServerMode) {
-            if (ulong.TryParse(configuration.Server, out ulong server)) {
-                await interaction_service.RegisterCommandsToGuildAsync(server, true);
-                logger.LogDebug("Registered commands to guild {guild_id}", server);
-                return;
-            }
-
-            logger.LogError("Unable to convert server id to ulong. {configuration_string}", configuration.Server);
-            throw new Exception($"Unable to convert server id to ulong. {configuration.Server}");
-        }
-        else {
-            await interaction_service.RegisterCommandsGloballyAsync(true);
-            logger.LogDebug("Registered commands globally");
-            return;
-        }
-    }
+    private async Task ReadyAsync() => await (configuration.SingleServerMode ? InitializeSingleServerMode() : InitializeGlobalServerMode());
 
     /// <summary>
     /// Handles the destination of incoming interaction and makes sure it gets delivered to the correct handler.
@@ -81,4 +60,42 @@ public sealed class InteractionHandler(
             }
         }
     }
+
+    /// <summary>
+    /// Initialized single server mode, registering the commands only to the server selected in the config
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    private async Task InitializeSingleServerMode() {
+        if (!ulong.TryParse(configuration.Server, out ulong server)) {
+            logger.LogError("Unable to convert server id to ulong. {configuration_string}", configuration.Server);
+            throw new Exception($"Unable to convert server id to ulong. {configuration.Server}");
+        }
+
+        await interaction_service.RegisterCommandsToGuildAsync(server, true);
+        logger.LogDebug("Registered commands to guild {guild_id}", server);
+        return;
+    }
+
+    /// <summary>
+    /// Initialized global server mode, registering the commands globally
+    /// </summary>
+    /// <returns></returns>
+    private async Task InitializeGlobalServerMode() {
+        await interaction_service.RegisterCommandsGloballyAsync(true);
+        logger.LogDebug("Registered commands globally");
+        return;
+    }
+
+    /// <summary>
+    /// Registers all assembly providers with the interaction service
+    /// </summary>
+    /// <returns></returns>
+    private async Task InitializeModules() {
+        foreach (IAssemblyProvider provider in assembly_providers) {
+            using IServiceScope scope = service_provider.CreateScope();
+            await interaction_service.AddModulesAsync(provider.GetType().Assembly, scope.ServiceProvider);
+        }
+    }
+
 }

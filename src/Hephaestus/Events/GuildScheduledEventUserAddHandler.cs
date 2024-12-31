@@ -1,25 +1,28 @@
 ﻿using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("GuildScheduledEventUserAdd", GatewayIntents.GuildScheduledEvents)]
-public abstract class GuildScheduledEventUserAddHandler : EventHandler
+public abstract class GuildScheduledEventUserAddHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected GuildScheduledEventUserAddParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (GuildScheduledEventUserAddParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.GuildScheduledEventUserAdd += (User, SocketGuildEvent) => execution(new GuildScheduledEventUserAddParameters(User, SocketGuildEvent));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.GuildScheduledEventUserAdd += (arg1, arg2) => execution(client, services, key, new GuildScheduledEventUserAddParameters(arg1, arg2));
+    }
+
 }
 
 public record GuildScheduledEventUserAddParameters(Cacheable<SocketUser, RestUser, IUser, ulong> User, SocketGuildEvent SocketGuildEvent) : IEventParameters;

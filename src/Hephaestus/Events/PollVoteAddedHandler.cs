@@ -1,25 +1,28 @@
 ﻿using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("PollVoteAdded", GatewayIntents.GuildMessagePolls)]
-public abstract class PollVoteAddedHandler : EventHandler
+public abstract class PollVoteAddedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected PollVoteAddedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (PollVoteAddedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.PollVoteAdded += (User, SocketMessageChannel, UserMessage, SocketGuild, Id) => execution(new PollVoteAddedParameters(User, SocketMessageChannel, UserMessage, SocketGuild, Id));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.PollVoteAdded += (arg1, arg2, arg3, arg4, arg5) => execution(client, services, key, new PollVoteAddedParameters(arg1, arg2, arg3, arg4, arg5));
+    }
+
 }
 
 public record PollVoteAddedParameters(Cacheable<IUser, ulong> User, Cacheable<ISocketMessageChannel, IRestMessageChannel, IMessageChannel, ulong> SocketMessageChannel, Cacheable<IUserMessage, ulong> UserMessage, Cacheable<SocketGuild, RestGuild, IGuild, ulong>? SocketGuild, ulong Id) : IEventParameters;

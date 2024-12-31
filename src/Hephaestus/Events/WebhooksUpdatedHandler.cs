@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("WebhooksUpdated", GatewayIntents.GuildWebhooks)]
-public abstract class WebhooksUpdatedHandler : EventHandler
+public abstract class WebhooksUpdatedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected WebhooksUpdatedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (WebhooksUpdatedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.WebhooksUpdated += (SocketGuild, SocketChannel) => execution(new WebhooksUpdatedParameters(SocketGuild, SocketChannel));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.WebhooksUpdated += (arg1, arg2) => execution(client, services, key, new WebhooksUpdatedParameters(arg1, arg2));
+    }
+
 }
 
 public record WebhooksUpdatedParameters(SocketGuild SocketGuild, SocketChannel SocketChannel) : IEventParameters;

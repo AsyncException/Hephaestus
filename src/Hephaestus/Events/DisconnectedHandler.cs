@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("Disconnected", GatewayIntents.None)]
-public abstract class DisconnectedHandler : EventHandler
+public abstract class DisconnectedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected DisconnectedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (DisconnectedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.Disconnected += (Exception) => execution(new DisconnectedParameters(Exception));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.Disconnected += (arg1) => execution(client, services, key, new DisconnectedParameters(arg1));
+    }
+
 }
 
 public record DisconnectedParameters(Exception Exception) : IEventParameters;

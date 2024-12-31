@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("InteractionCreated", GatewayIntents.None)]
-public abstract class InteractionCreatedHandler : EventHandler
+public abstract class InteractionCreatedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected InteractionCreatedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (InteractionCreatedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.InteractionCreated += (SocketInteraction) => execution(new InteractionCreatedParameters(SocketInteraction));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.InteractionCreated += (arg1) => execution(client, services, key, new InteractionCreatedParameters(arg1));
+    }
+
 }
 
 public record InteractionCreatedParameters(SocketInteraction SocketInteraction) : IEventParameters;

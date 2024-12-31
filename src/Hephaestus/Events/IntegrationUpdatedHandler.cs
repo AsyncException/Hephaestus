@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("IntegrationUpdated", GatewayIntents.None)]
-public abstract class IntegrationUpdatedHandler : EventHandler
+public abstract class IntegrationUpdatedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected IntegrationUpdatedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (IntegrationUpdatedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.IntegrationUpdated += (Integration) => execution(new IntegrationUpdatedParameters(Integration));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.IntegrationUpdated += (arg1) => execution(client, services, key, new IntegrationUpdatedParameters(arg1));
+    }
+
 }
 
 public record IntegrationUpdatedParameters(IIntegration Integration) : IEventParameters;

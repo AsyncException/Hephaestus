@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("ModalSubmitted", GatewayIntents.None)]
-public abstract class ModalSubmittedHandler : EventHandler
+public abstract class ModalSubmittedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected ModalSubmittedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (ModalSubmittedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.ModalSubmitted += (SocketModal) => execution(new ModalSubmittedParameters(SocketModal));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.ModalSubmitted += (arg1) => execution(client, services, key, new ModalSubmittedParameters(arg1));
+    }
+
 }
 
 public record ModalSubmittedParameters(SocketModal SocketModal) : IEventParameters;

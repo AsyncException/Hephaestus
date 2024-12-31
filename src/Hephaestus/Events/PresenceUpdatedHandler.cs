@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("PresenceUpdated", GatewayIntents.GuildPresences)]
-public abstract class PresenceUpdatedHandler : EventHandler
+public abstract class PresenceUpdatedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected PresenceUpdatedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (PresenceUpdatedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.PresenceUpdated += (SocketUser, OldSocketPresence, SocketPresence) => execution(new PresenceUpdatedParameters(SocketUser, OldSocketPresence, SocketPresence));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.PresenceUpdated += (arg1, arg2, arg3) => execution(client, services, key, new PresenceUpdatedParameters(arg1, arg2, arg3));
+    }
+
 }
 
 public record PresenceUpdatedParameters(SocketUser SocketUser, SocketPresence OldSocketPresence, SocketPresence SocketPresence) : IEventParameters;

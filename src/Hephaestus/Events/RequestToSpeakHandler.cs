@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("RequestToSpeak", GatewayIntents.None)]
-public abstract class RequestToSpeakHandler : EventHandler
+public abstract class RequestToSpeakHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected RequestToSpeakParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (RequestToSpeakParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.RequestToSpeak += (SocketStageChannel, SocketGuildUser) => execution(new RequestToSpeakParameters(SocketStageChannel, SocketGuildUser));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.RequestToSpeak += (arg1, arg2) => execution(client, services, key, new RequestToSpeakParameters(arg1, arg2));
+    }
+
 }
 
 public record RequestToSpeakParameters(SocketStageChannel SocketStageChannel, SocketGuildUser SocketGuildUser) : IEventParameters;

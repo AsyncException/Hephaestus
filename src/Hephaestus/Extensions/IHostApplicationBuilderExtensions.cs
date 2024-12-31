@@ -2,17 +2,17 @@
 using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
+using Hephaestus.Events.EventHandling;
 using Hephaestus.Extensions;
 using Hephaestus.InteractionHandling;
 using Hephaestus.Models;
+using Hephaestus.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
-using System.Reflection;
 
 namespace Hephaestus;
 
@@ -38,7 +38,7 @@ public static class IHostApplicationBuilderExtensions
 
         //Add configuration
 
-        builder.Services.AddTransient<HephaestusConfiguration>((services) => {
+        builder.Services.AddTransient((services) => {
             HephaestusConfiguration config = services.GetRequiredService<IConfiguration>().GetSection("Hephaestus").Get<HephaestusConfiguration>() ?? new();
             configurationSetup?.Invoke(config);
             return config;
@@ -76,7 +76,7 @@ public static class IHostApplicationBuilderExtensions
     private static IHostApplicationBuilder ConfigureServices(this IHostApplicationBuilder builder) {
         builder.Services.AddSerilog();
         builder.Services.AddHostedService<BootStrapper>();
-        builder.Services.AddSingleton(provider => {
+        builder.Services.AddSingleton(static provider => {
             HephaestusConfiguration config = provider.GetRequiredService<HephaestusConfiguration>();
             ILogger<DiscordSocketClient> logger = provider.GetRequiredService<ILogger<DiscordSocketClient>>();
             DiscordSocketClient client = new(config);
@@ -85,7 +85,7 @@ public static class IHostApplicationBuilderExtensions
 
             return client;
         });
-        builder.Services.AddSingleton<DiscordRestClient>(e => e.GetRequiredService<DiscordSocketClient>().Rest);
+        builder.Services.AddSingleton<DiscordRestClient>(static e => e.GetRequiredService<DiscordSocketClient>().Rest);
         builder.Services.AddSingleton<InteractionService>();
         builder.Services.AddSingleton<InteractionHandler>();
         builder.Services.AddSingleton<EventSubscriptionHandler>();
@@ -104,10 +104,8 @@ public static class IHostApplicationBuilderExtensions
         new T().OptionalModules(host_builder);
         host_builder.Services.AddSingleton<IAssemblyProvider, T>();
 
-        foreach (Type eventHandler in new TypeFinder<T>().IsNotAbstract().Inherits<IEventHandler>().HasAttribute<EventHandlerAttribute>().Resolve()) {
-            EventHandlerAttribute attribute = eventHandler.GetCustomAttribute<EventHandlerAttribute>() ?? throw new Exception("Event attribute not found.");
-            host_builder.Services.AddTransient(typeof(IEventHandler), eventHandler);
-            host_builder.Services.AddKeyedTransient(typeof(IEventHandler), attribute.EventType, eventHandler);
+        foreach (Type eventHandler in new TypeFinder<T>().IsNotAbstract().Inherits<IEventHandler>().HasAttribute<EventHandlerAttribute>()) {
+            host_builder.Services.AddKeyedTransient(typeof(IEventHandler), eventHandler.GUID, eventHandler);
         }
 
         return host_builder;

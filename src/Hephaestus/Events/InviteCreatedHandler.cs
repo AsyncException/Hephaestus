@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("InviteCreated", GatewayIntents.GuildInvites)]
-public abstract class InviteCreatedHandler : EventHandler
+public abstract class InviteCreatedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected InviteCreatedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (InviteCreatedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.InviteCreated += (SocketInvite) => execution(new InviteCreatedParameters(SocketInvite));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.InviteCreated += (arg1) => execution(client, services, key, new InviteCreatedParameters(arg1));
+    }
+
 }
 
 public record InviteCreatedParameters(SocketInvite SocketInvite) : IEventParameters;

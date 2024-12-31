@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("Log", GatewayIntents.None)]
-public abstract class LogHandler : EventHandler
+public abstract class LogHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected LogParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (LogParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.Log += (LogMessage) => execution(new LogParameters(LogMessage));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.Log += (arg1) => execution(client, services, key, new LogParameters(arg1));
+    }
+
 }
 
 public record LogParameters(LogMessage LogMessage) : IEventParameters;

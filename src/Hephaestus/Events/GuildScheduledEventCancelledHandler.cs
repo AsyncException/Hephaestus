@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("GuildScheduledEventCancelled", GatewayIntents.GuildScheduledEvents)]
-public abstract class GuildScheduledEventCancelledHandler : EventHandler
+public abstract class GuildScheduledEventCancelledHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected GuildScheduledEventCancelledParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (GuildScheduledEventCancelledParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.GuildScheduledEventCancelled += (SocketGuildEvent) => execution(new GuildScheduledEventCancelledParameters(SocketGuildEvent));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.GuildScheduledEventCancelled += (arg1) => execution(client, services, key, new GuildScheduledEventCancelledParameters(arg1));
+    }
+
 }
 
 public record GuildScheduledEventCancelledParameters(SocketGuildEvent SocketGuildEvent) : IEventParameters;

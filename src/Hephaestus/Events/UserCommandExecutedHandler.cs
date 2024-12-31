@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("UserCommandExecuted", GatewayIntents.None)]
-public abstract class UserCommandExecutedHandler : EventHandler
+public abstract class UserCommandExecutedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected UserCommandExecutedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (UserCommandExecutedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.UserCommandExecuted += (SocketUserCommand) => execution(new UserCommandExecutedParameters(SocketUserCommand));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.UserCommandExecuted += (arg1) => execution(client, services, key, new UserCommandExecutedParameters(arg1));
+    }
+
 }
 
 public record UserCommandExecutedParameters(SocketUserCommand SocketUserCommand) : IEventParameters;

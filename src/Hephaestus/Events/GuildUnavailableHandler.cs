@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("GuildUnavailable", GatewayIntents.Guilds)]
-public abstract class GuildUnavailableHandler : EventHandler
+public abstract class GuildUnavailableHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected GuildUnavailableParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (GuildUnavailableParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.GuildUnavailable += (SocketGuild) => execution(new GuildUnavailableParameters(SocketGuild));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.GuildUnavailable += (arg1) => execution(client, services, key, new GuildUnavailableParameters(arg1));
+    }
+
 }
 
 public record GuildUnavailableParameters(SocketGuild SocketGuild) : IEventParameters;

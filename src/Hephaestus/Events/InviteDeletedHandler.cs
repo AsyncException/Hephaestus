@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("InviteDeleted", GatewayIntents.GuildInvites)]
-public abstract class InviteDeletedHandler : EventHandler
+public abstract class InviteDeletedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected InviteDeletedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (InviteDeletedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.InviteDeleted += (SocketGuildChannel, DeletedInviteCode) => execution(new InviteDeletedParameters(SocketGuildChannel, DeletedInviteCode));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.InviteDeleted += (arg1, arg2) => execution(client, services, key, new InviteDeletedParameters(arg1, arg2));
+    }
+
 }
 
 public record InviteDeletedParameters(SocketGuildChannel SocketGuildChannel, string DeletedInviteCode) : IEventParameters;

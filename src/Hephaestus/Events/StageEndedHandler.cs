@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("StageEnded", GatewayIntents.None)]
-public abstract class StageEndedHandler : EventHandler
+public abstract class StageEndedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected StageEndedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (StageEndedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.StageEnded += (SocketStageChannel) => execution(new StageEndedParameters(SocketStageChannel));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.StageEnded += (arg1) => execution(client, services, key, new StageEndedParameters(arg1));
+    }
+
 }
 
 public record StageEndedParameters(SocketStageChannel SocketStageChannel) : IEventParameters;

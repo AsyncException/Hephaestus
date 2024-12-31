@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("UserUnbanned", GatewayIntents.GuildBans)]
-public abstract class UserUnbannedHandler : EventHandler
+public abstract class UserUnbannedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected UserUnbannedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (UserUnbannedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.UserUnbanned += (SocketUser, SocketGuild) => execution(new UserUnbannedParameters(SocketUser, SocketGuild));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.UserUnbanned += (arg1, arg2) => execution(client, services, key, new UserUnbannedParameters(arg1, arg2));
+    }
+
 }
 
 public record UserUnbannedParameters(SocketUser SocketUser, SocketGuild SocketGuild) : IEventParameters;

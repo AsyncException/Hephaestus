@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
+using Hephaestus.Events.EventHandling;
 using Hephaestus.InteractionHandling;
 using Hephaestus.Models;
 using Microsoft.Extensions.Hosting;
@@ -25,7 +25,7 @@ internal sealed class BootStrapper(
     public async Task StartAsync(CancellationToken cancellation_token) {
         logger.LogDebug("Bootstrapper started");
 
-        await event_handler.InitiaizeAsync();
+        await event_handler.InitializeAsync();
         await interaction_handler.InitializeAsync();
 
         await client.LoginAsync(TokenType.Bot, configuration.Token);

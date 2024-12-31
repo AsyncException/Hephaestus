@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("ReactionRemoved", GatewayIntents.GuildMessageReactions)]
-public abstract class ReactionRemovedHandler : EventHandler
+public abstract class ReactionRemovedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected ReactionRemovedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (ReactionRemovedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.ReactionRemoved += (UserMessage, MessageChannel, SocketReaction) => execution(new ReactionRemovedParameters(UserMessage, MessageChannel, SocketReaction));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.ReactionRemoved += (arg1, arg2, arg3) => execution(client, services, key, new ReactionRemovedParameters(arg1, arg2, arg3));
+    }
+
 }
 
 public record ReactionRemovedParameters(Cacheable<IUserMessage, ulong> UserMessage, Cacheable<IMessageChannel, ulong> MessageChannel, SocketReaction SocketReaction) : IEventParameters;

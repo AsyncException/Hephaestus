@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("ThreadMemberJoined", GatewayIntents.None)]
-public abstract class ThreadMemberJoinedHandler : EventHandler
+public abstract class ThreadMemberJoinedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected ThreadMemberJoinedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (ThreadMemberJoinedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.ThreadMemberJoined += (SocketThreadUser) => execution(new ThreadMemberJoinedParameters(SocketThreadUser));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.ThreadMemberJoined += (arg1) => execution(client, services, key, new ThreadMemberJoinedParameters(arg1));
+    }
+
 }
 
 public record ThreadMemberJoinedParameters(SocketThreadUser SocketThreadUser) : IEventParameters;

@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("JoinedGuild", GatewayIntents.None)]
-public abstract class JoinedGuildHandler : EventHandler
+public abstract class JoinedGuildHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected JoinedGuildParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (JoinedGuildParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.JoinedGuild += (SocketGuild) => execution(new JoinedGuildParameters(SocketGuild));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.JoinedGuild += (arg1) => execution(client, services, key, new JoinedGuildParameters(arg1));
+    }
+
 }
 
 public record JoinedGuildParameters(SocketGuild SocketGuild) : IEventParameters;

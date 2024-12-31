@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("EntitlementCreated", GatewayIntents.None)]
-public abstract class EntitlementCreatedHandler : EventHandler
+public abstract class EntitlementCreatedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected EntitlementCreatedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (EntitlementCreatedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.EntitlementCreated += (SocketEntitlement) => execution(new EntitlementCreatedParameters(SocketEntitlement));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.EntitlementCreated += (arg1) => execution(client, services, key, new EntitlementCreatedParameters(arg1));
+    }
+
 }
 
 public record EntitlementCreatedParameters(SocketEntitlement SocketEntitlement) : IEventParameters;

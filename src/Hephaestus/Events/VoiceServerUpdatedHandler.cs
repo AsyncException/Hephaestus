@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("VoiceServerUpdated", GatewayIntents.None)]
-public abstract class VoiceServerUpdatedHandler : EventHandler
+public abstract class VoiceServerUpdatedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected VoiceServerUpdatedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (VoiceServerUpdatedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.VoiceServerUpdated += (SocketVoiceServer) => execution(new VoiceServerUpdatedParameters(SocketVoiceServer));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.VoiceServerUpdated += (arg1) => execution(client, services, key, new VoiceServerUpdatedParameters(arg1));
+    }
+
 }
 
 public record VoiceServerUpdatedParameters(SocketVoiceServer SocketVoiceServer) : IEventParameters;

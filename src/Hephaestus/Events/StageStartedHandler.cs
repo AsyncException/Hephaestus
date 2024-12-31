@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("StageStarted", GatewayIntents.None)]
-public abstract class StageStartedHandler : EventHandler
+public abstract class StageStartedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected StageStartedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (StageStartedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.StageStarted += (SocketStageChannel) => execution(new StageStartedParameters(SocketStageChannel));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.StageStarted += (arg1) => execution(client, services, key, new StageStartedParameters(arg1));
+    }
+
 }
 
 public record StageStartedParameters(SocketStageChannel SocketStageChannel) : IEventParameters;

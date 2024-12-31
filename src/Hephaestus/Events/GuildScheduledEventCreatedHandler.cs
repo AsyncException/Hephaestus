@@ -1,24 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.EventHandling;
-using EventHandler = Hephaestus.EventHandling.EventHandler;
+using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus.Events;
+namespace Hephaestus;
 
 //TODO: Add documentation and intents check
 [EventHandler("GuildScheduledEventCreated", GatewayIntents.GuildScheduledEvents)]
-public abstract class GuildScheduledEventCreatedHandler : EventHandler
+public abstract class GuildScheduledEventCreatedHandler : IEventHandler
 {
     protected DiscordSocketClient Client { get; private set; } = default!;
     protected GuildScheduledEventCreatedParameters Context { get; private set; } = default!;
 
-    public override void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
+    public abstract Task Execute();
+    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
         Client = client;
         Context = (GuildScheduledEventCreatedParameters)parameters;
     }
 
-    public static void MapParameters(DiscordSocketClient client, Func<IEventParameters, Task> execution) =>
-        client.GuildScheduledEventCreated += (SocketGuildEvent) => execution(new GuildScheduledEventCreatedParameters(SocketGuildEvent));
+    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+
+        client.GuildScheduledEventCreated += (arg1) => execution(client, services, key, new GuildScheduledEventCreatedParameters(arg1));
+    }
+
 }
 
 public record GuildScheduledEventCreatedParameters(SocketGuildEvent SocketGuildEvent) : IEventParameters;
