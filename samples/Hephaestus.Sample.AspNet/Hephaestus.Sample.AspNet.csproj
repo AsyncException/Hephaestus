@@ -1,19 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>0b7888da-a9ea-4db5-a7a6-dd629385e4be</UserSecretsId>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hephaestus\Hephaestus.csproj" />
     <ProjectReference Include="..\Hephaestus.Sample.Module.AuditLog.AspNet\Hephaestus.Sample.Module.AuditLog.AspNet.csproj" />
   </ItemGroup>
-
 </Project>
