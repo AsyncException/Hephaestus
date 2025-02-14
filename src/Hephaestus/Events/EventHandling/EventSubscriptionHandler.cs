@@ -25,7 +25,7 @@ public sealed class EventSubscriptionHandler(DiscordSocketClient client, IServic
     }
 
     private static void ValidateIntents(HephaestusConfiguration config, ServiceAccessor accessor) {
-        if (!config.SkipEventIntentCheck && !accessor.Intents.Any(e => config.GatewayIntents.HasFlag(e))) {
+        if (!config.SkipEventIntentCheck && !accessor.Intents.Any(e => config.GatewayIntentsFlags.HasFlag(e))) {
             throw new Exception($"Event subscriber found for event {accessor.Attribute.EventType} but required intents are not present. Require one of: {string.Join(',', accessor.Intents)}");
         }
     }

@@ -1,11 +1,12 @@
 ﻿{
-  "ConnectionStrings": {
-    "Default": "Data Source=Application.db"
-  },
-  "Discord": {
+  "Hephaestus": {
     "Token": "Enter bot token here",
     "Server": "Server id when SingleServerMode is enabled",
     "SingleServerMode": false,
-    "SkipEventIntentCheck": false
+    "SkipEventIntentCheck": false,
+    "GatewayIntents": [
+      "AllUnprivileged",
+      "MessageContent"
+    ]
   }
 }

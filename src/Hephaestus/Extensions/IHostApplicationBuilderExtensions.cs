@@ -29,19 +29,74 @@ public static class IHostApplicationBuilderExtensions
     ///			<item><description>Add the basic required services to the DI container</description></item>
     ///		</list>
     /// </remarks>
-    ///
-    /// <param name="builder"></param>
-    /// <returns></returns>
-    public static IHostApplicationBuilder AddHephaestus(this IHostApplicationBuilder builder, Action<DiscordSocketConfig>? configurationSetup = null) {
+    /// <param name="builder">The <seealso cref="IHostApplicationBuilder"/> to register the services to</param>
+    /// <param name="configurationSetup">An after initialization configuration modifier. Overrides settings from the <seealso cref="IConfiguration"/></param>
+    /// <param name="configurationSection">Optional: a custom section key. If not null the key is required to exist</param>
+    /// <returns>The original <seealso cref="IHostApplicationBuilder"/> for chaining</returns>
+    /// <exception cref="InvalidOperationException">Gets thrown if the <paramref name="configurationSection"/> is set but was not found</exception>
+    /// <exception cref="NullReferenceException">Gets thrown if the <paramref name="configurationSection"/> is set and the key was found but contained no values or incorrect values</exception>
+    public static IHostApplicationBuilder AddHephaestus(this IHostApplicationBuilder builder, Action<HephaestusConfiguration> configurationSetup, string? configurationSection = null) {
         builder.ConfigureLogging();
         builder.ConfigureServices();
 
         //Add configuration
+        builder.Services.AddTransient((services) => {
+            IConfiguration configuration = services.GetRequiredService<IConfiguration>();
+
+            HephaestusConfiguration config = null!;
+            if (configurationSection is null) {
+                IConfigurationSection section = configuration.GetSection("Hephaestus");
+                config = section.Get<HephaestusConfiguration>() ?? new();
+            }
+            else {
+                //If a user gives a configuration section key it should always return a configuration because its expected to be there.
+                IConfigurationSection section = configuration.GetRequiredSection(configurationSection);
+                config = section.Get<HephaestusConfiguration>()
+                    ?? throw new NullReferenceException($"The configuration section with key \"{configurationSection}\" return a null configuration after deserializing.");
+            }
+
+            configurationSetup.Invoke(config);
+            return config;
+        });
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Add required settings and services for Hephaestus to work correctly. To register modules use <seealso cref="AddHephaestusModule{T}"/>
+    /// </summary>
+    /// <remarks>
+    ///		Actions this method performs:
+    ///		<list type="bullet">
+    ///			<item><description>Setup the configuration to use the appsettings.json file and if debugging also adds the user secrets</description></item>
+    ///			<item><description>Adds Serilog as logging provider and apply default overrides and formatting.</description></item>
+    ///			<item><description>Add the basic required services to the DI container</description></item>
+    ///		</list>
+    /// </remarks>
+    /// <param name="builder">The <seealso cref="IHostApplicationBuilder"/> to register the services to</param>
+    /// <param name="configurationSection">Optional: a custom section key. If not null the key is required to exist</param>
+    /// <returns>The original <seealso cref="IHostApplicationBuilder"/> for chaining</returns>
+    /// <exception cref="InvalidOperationException">Gets thrown if the <paramref name="configurationSection"/> is set but was not found</exception>
+    /// <exception cref="NullReferenceException">Gets thrown if the <paramref name="configurationSection"/> is set and the key was found but contained no values or incorrect values</exception>
+    public static IHostApplicationBuilder AddHephaestus(this IHostApplicationBuilder builder, string? configurationSection = null) {
+        builder.ConfigureLogging();
+        builder.ConfigureServices();
 
         builder.Services.AddTransient((services) => {
-            HephaestusConfiguration config = services.GetRequiredService<IConfiguration>().GetSection("Hephaestus").Get<HephaestusConfiguration>() ?? new();
-            configurationSetup?.Invoke(config);
-            return config;
+            IConfiguration configuration = services.GetRequiredService<IConfiguration>();
+
+            if(configurationSection is null) {
+                IConfigurationSection section = configuration.GetSection("Hephaestus");
+                HephaestusConfiguration config = section.Get<HephaestusConfiguration>() ?? new();
+                return config;
+            }
+            else {
+                //If a user gives a configuration section key it should always return a configuration because its expected to be there.
+                IConfigurationSection section = configuration.GetRequiredSection(configurationSection);
+                HephaestusConfiguration config = section.Get<HephaestusConfiguration>() 
+                    ?? throw new NullReferenceException($"The configuration section with key \"{configurationSection}\" return a null configuration after deserializing.");
+                return config;
+            }
         });
 
         return builder;
