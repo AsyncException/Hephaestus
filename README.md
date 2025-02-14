@@ -8,7 +8,7 @@ Hephaestus is an easy to setup framework for running Discord Bots using [Discord
 - **Event Handling**: Simplified setup for handling events.
 - **Modular Architecture**: Create feature modules that can be easily plugged into your bot.
 - **Hosting**: Integration with AspNet or Microsofts Hosting model.
-- ~~**EntityFramework**: Integration with EntityFramework so you can setup your database out of the box.~~ Removed EF from default implementation. This allows a user to choose their own database. EF can easily be added as you would in any ASPnet or hosting application.
+- ~~**EntityFramework**: Integration with EntityFramework so you can setup your database out of the box.~~ Removed EF from default implementation. This allows a user to choose their own database. EF can easily be added as you would in any ASP.NET or hosting application.
 
 ## Installation
 ```bash
