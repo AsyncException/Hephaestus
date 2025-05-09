@@ -2,20 +2,17 @@
 using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Extensions;
-using Hephaestus.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Hephaestus.InteractionHandling;
+namespace Hephaestus.Interactions;
 
 public sealed class InteractionHandler(
     DiscordSocketClient client,
     IServiceProvider service_provider,
     HephaestusConfiguration configuration,
     ILogger<InteractionHandler> logger,
-    InteractionService interaction_service,
-    IEnumerable<IAssemblyProvider> assembly_providers
+    InteractionService interaction_service
 )
 {
     private readonly DiscordSocketClient client = client;
@@ -23,7 +20,6 @@ public sealed class InteractionHandler(
     private readonly HephaestusConfiguration configuration = configuration;
     private readonly IServiceProvider service_provider = service_provider;
     private readonly InteractionService interaction_service = interaction_service;
-    private readonly IEnumerable<IAssemblyProvider> assembly_providers = assembly_providers;
 
     /// <summary>
     /// Initialize the <see cref="InteractionHandler"/> and setup modules registered as <see cref="IAssemblyProvider"/>
@@ -92,10 +88,8 @@ public sealed class InteractionHandler(
     /// </summary>
     /// <returns></returns>
     private async Task InitializeModules() {
-        foreach (IAssemblyProvider provider in assembly_providers) {
-            using IServiceScope scope = service_provider.CreateScope();
-            await interaction_service.AddModulesAsync(provider.GetType().Assembly, scope.ServiceProvider);
+        foreach (InteractionHandlerReference interaction in service_provider.GetRequiredService<IEnumerable<InteractionHandlerReference>>()) {
+            await interaction_service.AddModuleAsync(interaction.Type, service_provider);
         }
     }
-
 }

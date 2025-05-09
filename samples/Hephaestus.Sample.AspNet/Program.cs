@@ -11,7 +11,7 @@ builder.Configuration.AddUserSecrets<Program>();
 #endif
 
 builder.AddHephaestus();
-builder.AddHephaestusModule<AssemblyProvider>();
+builder.AddHephaestusModule<Module>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -32,6 +32,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseHephaestus();
+//app.UseHephaestus();
 
 app.Run();

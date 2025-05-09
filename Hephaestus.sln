@@ -12,6 +12,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hephaestus.Sample.AspNet", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hephaestus.Sample.Module.AuditLog.AspNet", "samples\Hephaestus.Sample.Module.AuditLog.AspNet\Hephaestus.Sample.Module.AuditLog.AspNet.csproj", "{3757B4D9-CA2F-4B78-8F04-2460610CFB76}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hephaestus.SourceGenerator", "src\Hephaestus.SourceGenerator\Hephaestus.SourceGenerator.csproj", "{2A1F21F8-2E61-422B-B5B2-3A6EC321C08C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{38D530C9-96B1-4B88-94BE-D63B38261A1C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,9 +42,19 @@ Global
 		{3757B4D9-CA2F-4B78-8F04-2460610CFB76}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3757B4D9-CA2F-4B78-8F04-2460610CFB76}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3757B4D9-CA2F-4B78-8F04-2460610CFB76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A1F21F8-2E61-422B-B5B2-3A6EC321C08C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A1F21F8-2E61-422B-B5B2-3A6EC321C08C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A1F21F8-2E61-422B-B5B2-3A6EC321C08C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A1F21F8-2E61-422B-B5B2-3A6EC321C08C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4A82D42B-93A7-43F4-8A0C-272E417DA246} = {38D530C9-96B1-4B88-94BE-D63B38261A1C}
+		{D46FF852-A2F5-45FE-88D7-ABC738D39197} = {38D530C9-96B1-4B88-94BE-D63B38261A1C}
+		{1A91E5D1-4998-4F41-B49A-48B3DB2427AE} = {38D530C9-96B1-4B88-94BE-D63B38261A1C}
+		{3757B4D9-CA2F-4B78-8F04-2460610CFB76} = {38D530C9-96B1-4B88-94BE-D63B38261A1C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = 6c44f59b-8cc1-4391-81d0-70aa03b1f946

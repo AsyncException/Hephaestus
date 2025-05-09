@@ -1,20 +1,13 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
-using Hephaestus.InteractionHandling;
-using Hephaestus.Models;
+using Hephaestus.Events;
+using Hephaestus.Interactions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Hephaestus;
 
-internal sealed class BootStrapper(
-    DiscordSocketClient client,
-    EventSubscriptionHandler event_handler,
-    ILogger<BootStrapper> logger,
-    HephaestusConfiguration configuration,
-    InteractionHandler interaction_handler
-) : IHostedService
+internal sealed class BootStrapper(DiscordSocketClient client, EventSubscriptionHandler event_handler, ILogger<BootStrapper> logger, HephaestusConfiguration configuration, InteractionHandler interaction_handler) : IHostedService
 {
     private readonly DiscordSocketClient client = client;
     private readonly ILogger<BootStrapper> logger = logger;
@@ -25,7 +18,9 @@ internal sealed class BootStrapper(
     public async Task StartAsync(CancellationToken cancellation_token) {
         logger.LogDebug("Bootstrapper started");
 
-        await event_handler.InitializeAsync();
+        //Subscribing event handlers to the events.
+        event_handler.InitializeAsync();
+        
         await interaction_handler.InitializeAsync();
 
         await client.LoginAsync(TokenType.Bot, configuration.Token);
