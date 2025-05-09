@@ -38,17 +38,16 @@ public class InternalEventHandlerGenerator : IIncrementalGenerator
             string source = $$"""
             namespace {{context.Namespace}};
 
-            public abstract partial class {{context.ClassName}} where {{context.GenericParameters[0]}} : {{context.ClassName}} {
-                protected Discord.WebSocket.DiscordSocketClient Client { get; private set; } = default!;
+            public abstract partial class {{context.ClassName}} : IEventHandler<{{context.GenericParameters[0]}}> where {{context.GenericParameters[0]}} : {{context.ClassName}} {
 
                 public abstract Task Execute({{parameters.GetParameters()}});
                 
-                static Discord.GatewayIntents[] Hephaestus.Events.IEventHandler<{{context.GenericParameters[0]}}>.RequiredIntents {get;} = [{{parameters.GetGatewayIntents()}}];
+                static Discord.GatewayIntents[] Hephaestus.Events.IEventHandler<{{context.GenericParameters[0]}}>.RequiredIntents { get; } = [{{parameters.GetGatewayIntents()}}];
                 
                 static void Hephaestus.Events.IEventHandler<{{context.GenericParameters[0]}}>.RegisterToClient(Discord.WebSocket.DiscordSocketClient client, System.IServiceProvider services) {
-                    client.{{context.SanitizedClassName.Replace("Handler", "")}} += async ({{string.Join(", ", Enumerable.Range(1, parameters.ParameterNames.Length).Select(e => $"arg{e}"))}}) => {
+                    client.{{context.SanitizedClassName.Replace("Handler", "")}} += async ({{string.Join(", ", Enumerable.Range(1, parameters.ParameterTypes.Length).Select(e => $"arg{e}"))}}) => {
                         {{context.GenericParameters[0]}} handler = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<{{context.GenericParameters[0]}}>(services);
-                        await handler.Execute({{string.Join(", ", Enumerable.Range(1, parameters.ParameterNames.Length).Select(e => $"arg{e}"))}});
+                        await handler.Execute({{string.Join(", ", Enumerable.Range(1, parameters.ParameterTypes.Length).Select(e => $"arg{e}"))}});
                     };
                 }
             }

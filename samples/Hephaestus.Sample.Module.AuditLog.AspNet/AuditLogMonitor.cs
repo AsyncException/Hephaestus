@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Hephaestus.Sample.Module.AuditLog.AspNet;
 
-public class AuditLogMonitor(ILogger<AuditLogMonitor> logger, DatabaseContext database) : AuditLogCreatedHandler<AuditLogMonitor>
+public class AuditLogMonitor(ILogger<AuditLogMonitor> logger, DatabaseContext database, DiscordSocketClient client) : AuditLogCreatedHandler<AuditLogMonitor>
 {
     public async override Task Execute(SocketAuditLogEntry SocketAuditLogEntry, SocketGuild SocketGuild) {
         logger.LogDebug("[auditlog created] received audit log created event");
@@ -17,7 +17,7 @@ public class AuditLogMonitor(ILogger<AuditLogMonitor> logger, DatabaseContext da
             return;
         }
 
-        IChannel channel = await Client.GetChannelAsync(config.ChannelId);
+        IChannel channel = await client.GetChannelAsync(config.ChannelId);
         if (channel is not ITextChannel text_channel) {
             logger.LogError("[auditlog created] Channel with id {channel_id} was not of type ITextChannel. Guild: {guild_id}", config.ChannelId, SocketGuild.Id);
             return;
