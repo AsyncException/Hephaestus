@@ -17,8 +17,8 @@ public sealed class InteractionHandler(
 {
     private readonly DiscordSocketClient client = client;
     private readonly ILogger<InteractionHandler> logger = logger;
-    private readonly HephaestusConfiguration configuration = configuration;
     private readonly IServiceProvider service_provider = service_provider;
+    private readonly HephaestusConfiguration configuration = configuration;
     private readonly InteractionService interaction_service = interaction_service;
 
     /// <summary>

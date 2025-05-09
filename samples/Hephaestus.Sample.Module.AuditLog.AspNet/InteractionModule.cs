@@ -7,22 +7,19 @@ using Microsoft.Extensions.Logging;
 namespace Hephaestus.Sample.Module.AuditLog.AspNet;
 
 [Group("setup", "server setup")]
-public class InteractionModule(DatabaseContext database, ILogger<InteractionModule> logger) : InteractionModuleBase<SocketInteractionContext>
+public class InteractionModule(ConfigProvider configProvider, ILogger<InteractionModule> logger) : InteractionModuleBase<SocketInteractionContext>
 {
-    private readonly DatabaseContext database = database;
-    private readonly ILogger<InteractionModule> logger = logger;
-
     [SlashCommand("audit", "setup audit logging")]
     public async Task SetupAuditlogs([Summary(description: "Text to quote")] ITextChannel channel) {
         await DeferAsync(ephemeral: true);
 
         try {
             logger.LogDebug("[setup audit] Update audit config, Server: {server_name} {server_id}, Channel: {channe_name} {channel_id}", Context.Guild.Name, Context.Guild.Id, channel.Name, channel.Id);
-            AuditLogConfiguration? config = await database.AuditLogConfigurations.Where(config => config.Server == Context.Guild.Id).FirstOrDefaultAsync();
+            AuditLogConfiguration? config = configProvider.Config.FirstOrDefault(e => e.Server == Context.Guild.Id);
 
             if (config is null) {
                 config = new() { Server = Context.Guild.Id };
-                database.Add(config);
+                configProvider.Config.Add(config);
                 logger.LogInformation("[setup audit] Creating new audit config for {server_id} with channel {channel_id}", Context.Guild.Id, channel.Id);
             }
             else {
@@ -31,7 +28,6 @@ public class InteractionModule(DatabaseContext database, ILogger<InteractionModu
 
             config.ChannelId = channel.Id;
 
-            await database.SaveChangesAsync();
             await FollowupAsync($"{channel.Mention} set as audit log channel");
         }
         catch (Exception ex) {

@@ -2,20 +2,16 @@
 using Discord.WebSocket;
 using Hephaestus.Sample.Module.AuditLog.AspNet.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Hephaestus.Sample.Module.AuditLog.AspNet;
 
 [Route("[controller]/[action]")]
-public class AuditLogApi(DiscordSocketClient client, DatabaseContext database, ILogger<AuditLogApi> logger) : Controller
+public class AuditLogApi(DiscordSocketClient client, ConfigProvider configProvider, ILogger<AuditLogApi> logger) : Controller
 {
-    private readonly DiscordSocketClient client = client;
-    private readonly DatabaseContext database = database;
-    private readonly ILogger<AuditLogApi> logger = logger;
 
     [HttpPost]
-    public async Task<IActionResult> UpdateLogging(ulong guild_id, ulong channel_id) {
+    public IActionResult UpdateLogging(ulong guild_id, ulong channel_id) {
         SocketGuild? guild = client.GetGuild(guild_id);
         if (guild is null) {
             return Problem("Given server does not exist or the bot has not joined this server");
@@ -30,11 +26,11 @@ public class AuditLogApi(DiscordSocketClient client, DatabaseContext database, I
             return Problem("Given channel is not a text channel");
         }
 
-        AuditLogConfiguration? audit_configuration = await database.AuditLogConfigurations.Where(config => config.Server == guild.Id).FirstOrDefaultAsync();
+        AuditLogConfiguration? audit_configuration = configProvider.Config.FirstOrDefault(e => e.Server == guild_id);
 
         if (audit_configuration is null) {
             audit_configuration = new() { Server = guild.Id };
-            database.Add(audit_configuration);
+            configProvider.Config.Add(audit_configuration);
             logger.LogInformation("[AuditLogApi] Creating new audit config for {server_id} with channel {channel_id}", guild.Id, text_channel.Id);
         }
         else {
@@ -42,8 +38,6 @@ public class AuditLogApi(DiscordSocketClient client, DatabaseContext database, I
         }
 
         audit_configuration.ChannelId = text_channel.Id;
-
-        await database.SaveChangesAsync();
 
         return Ok($"{text_channel.Name} set as audit log channel");
     }

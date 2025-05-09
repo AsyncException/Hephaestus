@@ -7,11 +7,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Hephaestus.Sample.Module.AuditLog.AspNet;
 
-public class AuditLogMonitor(ILogger<AuditLogMonitor> logger, DatabaseContext database, DiscordSocketClient client) : AuditLogCreatedHandler<AuditLogMonitor>
+public class AuditLogMonitor(ILogger<AuditLogMonitor> logger, ConfigProvider configProvider, DiscordSocketClient client) : AuditLogCreatedHandler<AuditLogMonitor>
 {
-    public async override Task Execute(SocketAuditLogEntry SocketAuditLogEntry, SocketGuild SocketGuild) {
+    public async override Task Execute(SocketAuditLogEntry socketAuditLogEntry, SocketGuild socketGuild) {
         logger.LogDebug("[auditlog created] received audit log created event");
-        AuditLogConfiguration? config = await database.AuditLogConfigurations.Where(config => config.Server == SocketGuild.Id).FirstOrDefaultAsync();
+        AuditLogConfiguration? config = configProvider.Config.FirstOrDefault(e => e.Server == socketGuild.Id);
 
         if (config is null) {
             return;
@@ -19,15 +19,15 @@ public class AuditLogMonitor(ILogger<AuditLogMonitor> logger, DatabaseContext da
 
         IChannel channel = await client.GetChannelAsync(config.ChannelId);
         if (channel is not ITextChannel text_channel) {
-            logger.LogError("[auditlog created] Channel with id {channel_id} was not of type ITextChannel. Guild: {guild_id}", config.ChannelId, SocketGuild.Id);
+            logger.LogError("[auditlog created] Channel with id {channel_id} was not of type ITextChannel. Guild: {guild_id}", config.ChannelId, socketAuditLogEntry.Id);
             return;
         }
 
         await text_channel.SendMessageAsync(embed: new EmbedBuilder()
             .WithTitle("AuditLog")
-            .WithDescription(SocketAuditLogEntry.Reason)
-            .WithFields(new EmbedFieldBuilder().WithName("Action").WithValue(SocketAuditLogEntry.Action).WithIsInline(true))
-            .WithFooter($"{SocketAuditLogEntry.CreatedAt} - {SocketAuditLogEntry.User.Username}")
+            .WithDescription(socketAuditLogEntry.Reason)
+            .WithFields(new EmbedFieldBuilder().WithName("Action").WithValue(socketAuditLogEntry.Action).WithIsInline(true))
+            .WithFooter($"{socketAuditLogEntry.CreatedAt} - {socketAuditLogEntry.User.Username}")
             .Build());
     }
 }
