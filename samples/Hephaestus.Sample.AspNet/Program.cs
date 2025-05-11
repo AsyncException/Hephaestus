@@ -32,8 +32,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-//app.UseHephaestus();
-
-AuditLogModule.AfterAppBuild(app);
-
 app.Run();

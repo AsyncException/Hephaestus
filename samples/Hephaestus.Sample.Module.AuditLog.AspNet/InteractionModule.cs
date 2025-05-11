@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Hephaestus.Sample.Module.AuditLog.AspNet.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Hephaestus.Sample.Module.AuditLog.AspNet;

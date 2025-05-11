@@ -1,32 +1,49 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.Events;
-using Hephaestus.Interactions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Hephaestus;
 
-internal sealed class BootStrapper(DiscordSocketClient client, EventSubscriptionHandler event_handler, ILogger<BootStrapper> logger, HephaestusConfiguration configuration, InteractionHandler interaction_handler) : IHostedService
+/// <summary>
+/// The main background process thats keeping the bot alive
+/// </summary>
+/// <param name="client"></param>
+/// <param name="eventHandler"></param>
+/// <param name="logger"></param>
+/// <param name="configuration"></param>
+/// <param name="interactionHandler"></param>
+internal sealed class BootStrapper(
+    DiscordSocketClient client,
+    ILogger<BootStrapper> logger,
+    HephaestusConfiguration configuration,
+    IEventSubscriptionHandler eventHandler,
+    IInteractionHandler interactionHandler
+    ) : IHostedService
 {
-    private readonly DiscordSocketClient client = client;
-    private readonly ILogger<BootStrapper> logger = logger;
-    private readonly EventSubscriptionHandler event_handler = event_handler;
-    private readonly HephaestusConfiguration configuration = configuration;
-    private readonly InteractionHandler interaction_handler = interaction_handler;
-
+    /// <summary>
+    /// Starts up and logs in the discord client
+    /// </summary>
+    /// <param name="cancellation_token"></param>
+    /// <returns></returns>
     public async Task StartAsync(CancellationToken cancellation_token) {
         logger.LogDebug("Bootstrapper started");
 
         //Subscribing event handlers to the events.
-        event_handler.InitializeAsync();
+        eventHandler.InitializeAsync();
         
-        await interaction_handler.InitializeAsync();
+        //Subscribing interactions
+        await interactionHandler.InitializeAsync();
 
         await client.LoginAsync(TokenType.Bot, configuration.Token);
         await client.StartAsync();
     }
 
+    /// <summary>
+    /// Stops the discord client
+    /// </summary>
+    /// <param name="cancellation_token"></param>
+    /// <returns></returns>
     public async Task StopAsync(CancellationToken cancellation_token) {
         logger.LogDebug("Bootstrapper stopped");
         await client.StopAsync();

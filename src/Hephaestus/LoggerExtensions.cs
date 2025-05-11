@@ -1,13 +1,21 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.Interactions;
 using Microsoft.Extensions.Logging;
 
 namespace Hephaestus;
 
+/// <summary>
+/// Extention class for mapping the LogServerities to the LogLevels from serilog.
+/// </summary>
 public static class LoggerExtensions
 {
-    private static LogLevel ConvertToLogLevel(this LogSeverity severity) => severity switch {
+    /// <summary>
+    /// Maps the LogSeverity to LogLevel
+    /// </summary>
+    /// <param name="severity"></param>
+    /// <returns></returns>
+    /// <exception cref="NotSupportedException"></exception>
+    private static LogLevel MapLogLevel(this LogSeverity severity) => severity switch {
         LogSeverity.Critical => LogLevel.Critical,
         LogSeverity.Error => LogLevel.Error,
         LogSeverity.Warning => LogLevel.Warning,
@@ -17,13 +25,13 @@ public static class LoggerExtensions
         _ => throw new NotSupportedException($"The LogSeverity {severity} is not currently supported"),
     };
 
-    public static async Task LogAsync(this ILogger<DiscordSocketClient> logger, LogMessage message) {
-        logger.Log(message.Severity.ConvertToLogLevel(), message.Exception, "[{Source}] {Message}", message.Source, message.Message);
-        await Task.CompletedTask;
+    public static Task LogAsync(this ILogger<DiscordSocketClient> logger, LogMessage message) {
+        logger.Log(message.Severity.MapLogLevel(), message.Exception, "[{Source}] {Message}", message.Source, message.Message);
+        return Task.CompletedTask;
     }
 
-    public static async Task LogAsync(this ILogger<InteractionHandler> logger, LogMessage message) {
-        logger.Log(message.Severity.ConvertToLogLevel(), message.Exception, "[{Source}] {Message}", message.Source, message.Message);
-        await Task.CompletedTask;
+    public static Task LogAsync(this ILogger<InteractionHandler> logger, LogMessage message) {
+        logger.Log(message.Severity.MapLogLevel(), message.Exception, "[{Source}] {Message}", message.Source, message.Message);
+        return Task.CompletedTask;
     }
 }

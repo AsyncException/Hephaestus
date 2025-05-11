@@ -1,26 +1,56 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Hephaestus.Interactions;
+namespace Hephaestus;
 
+/// <summary>
+/// A record holding the information about the handler for an interaction so it can be added to the <see cref="DiscordSocketClient"/> from the <see cref="IServiceProvider"/>
+/// </summary>
+/// <param name="Type"></param>
+public record InteractionHandlerReference(Type Type);
+
+/// <summary>
+/// Extention class for the <see cref="IServiceCollection"/> to make adding EventHandlers easier.
+/// </summary>
+public static class HephaestusInteractionHandlerExtensions
+{
+    /// <summary>
+    /// Adds an InteractionHandler to the <see cref="IServiceCollection"/>
+    /// </summary>
+    /// <typeparam name="T">The handler to add</typeparam>
+    /// <param name="services">The services which to add the handler to</param>
+    /// <returns>The <see cref="IServiceCollection"/> for chaining</returns>
+    public static IServiceCollection AddInteractionHandler<T>(this IServiceCollection services) where T : IInteractionModuleBase =>
+        services.AddTransient(services => new InteractionHandlerReference(typeof(T)));
+}
+
+/// <summary>
+/// A handler for subscribing <see cref="IInteractionModuleBase"/> to the discord events.
+/// </summary>
+public interface IInteractionHandler
+{
+    public Task InitializeAsync();
+}
+
+/// <summary>
+/// The base implementation of the <see cref="IInteractionHandler"/>
+/// </summary>
+/// <param name="client"></param>
+/// <param name="service_provider"></param>
+/// <param name="configuration"></param>
+/// <param name="logger"></param>
+/// <param name="interaction_service"></param>
 public sealed class InteractionHandler(
     DiscordSocketClient client,
     IServiceProvider service_provider,
     HephaestusConfiguration configuration,
     ILogger<InteractionHandler> logger,
     InteractionService interaction_service
-)
+) : IInteractionHandler
 {
-    private readonly DiscordSocketClient client = client;
-    private readonly ILogger<InteractionHandler> logger = logger;
-    private readonly IServiceProvider service_provider = service_provider;
-    private readonly HephaestusConfiguration configuration = configuration;
-    private readonly InteractionService interaction_service = interaction_service;
-
     /// <summary>
     /// Initialize the <see cref="InteractionHandler"/> and setup modules registered as <see cref="IAssemblyProvider"/>
     /// </summary>
@@ -46,14 +76,10 @@ public sealed class InteractionHandler(
     /// <returns></returns>
     private async Task HandleInteraction(SocketInteraction interaction) {
         try {
-            SocketInteractionContext ctx = new(client, interaction);
-            await interaction_service.ExecuteCommandAsync(ctx, service_provider);
+            await interaction_service.ExecuteCommandAsync(new SocketInteractionContext(client, interaction), service_provider);
         }
-        catch {
-            if (interaction.Type is InteractionType.ApplicationCommand) {
-                RestInteractionMessage original_response = await interaction.GetOriginalResponseAsync();
-                await original_response.DeleteAsync();
-            }
+        catch when (interaction.Type is InteractionType.ApplicationCommand) {
+            await (await interaction.GetOriginalResponseAsync()).DeleteAsync();
         }
     }
 
@@ -63,13 +89,8 @@ public sealed class InteractionHandler(
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
     private async Task InitializeSingleServerMode() {
-        if (!ulong.TryParse(configuration.Server, out ulong server)) {
-            logger.LogError("Unable to convert server id to ulong. {configuration_string}", configuration.Server);
-            throw new Exception($"Unable to convert server id to ulong. {configuration.Server}");
-        }
-
-        await interaction_service.RegisterCommandsToGuildAsync(server, true);
-        logger.LogDebug("Registered commands to guild {guild_id}", server);
+        await interaction_service.RegisterCommandsToGuildAsync(configuration.Server, true);
+        logger.LogDebug("Registered commands to guild {guild_id}", configuration.Server);
         return;
     }
 
