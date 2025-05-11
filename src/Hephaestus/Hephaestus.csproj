@@ -5,8 +5,10 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <UserSecretsId>64f22fdb-91b8-492e-8109-ba452edf9941</UserSecretsId>
+    <PackageOutputPath>$(OutputPath)</PackageOutputPath>
+    <PackageId>$(AssemblyName)-$(Configuration)</PackageId>
   </PropertyGroup>
   
   <ItemGroup>
@@ -18,12 +20,10 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\Hephaestus.SourceGenerator\Hephaestus.SourceGenerator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
-  </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="DiscordSocketEvents.json" />
+    <AdditionalFiles Include="Events\DiscordSocketEvents.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </AdditionalFiles>
   </ItemGroup>
 </Project>

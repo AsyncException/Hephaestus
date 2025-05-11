@@ -1,8 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hephaestus.Events;
 using Hephaestus.Sample.Module.AuditLog.Hosting.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Hephaestus.Sample.Module.AuditLog.Hosting;

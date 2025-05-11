@@ -23,7 +23,7 @@ public interface IEventHandler<THandler> where THandler : IEventHandler<THandler
 public record EventHandlerReference(string HandlerName, Action<DiscordSocketClient, IServiceProvider> RegistrationFunction, GatewayIntents[] RequiredIntent);
 
 /// <summary>
-/// Extention class for the <see cref="IServiceCollection"/> to make adding EventHandlers easier.
+/// Extension class for the <see cref="IServiceCollection"/> to make adding EventHandlers easier.
 /// </summary>
 public static class HephaestusEventHandlerExtensions
 {
