@@ -1,18 +1,9 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Hephaestus.Events;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hephaestus;
-
-/// <summary>
-/// An interface that the event handlers inherit. This is needed to access the <see cref="RegisterToClient(DiscordSocketClient, IServiceProvider)"/> statically in the registration.
-/// </summary>
-/// <typeparam name="THandler">A reference to the inheriting type</typeparam>
-public interface IEventHandler<THandler> where THandler : IEventHandler<THandler>
-{
-    internal static abstract void RegisterToClient(DiscordSocketClient client, IServiceProvider services);
-    public static abstract GatewayIntents[] RequiredIntents { get; }
-}
 
 /// <summary>
 /// A record holding the information about the handler for an event so it van be subscribed to the <see cref="DiscordSocketClient"/> from the <see cref="IServiceProvider"/>

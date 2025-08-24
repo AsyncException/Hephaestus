@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Hephaestus.Events;
 using Hephaestus.Sample.Module.AuditLog.Hosting.Models;
 using Microsoft.Extensions.Logging;
 

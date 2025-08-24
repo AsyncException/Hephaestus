@@ -13,21 +13,6 @@ namespace Hephaestus;
 public record InteractionHandlerReference(Type Type);
 
 /// <summary>
-/// Extention class for the <see cref="IServiceCollection"/> to make adding EventHandlers easier.
-/// </summary>
-public static class HephaestusInteractionHandlerExtensions
-{
-    /// <summary>
-    /// Adds an InteractionHandler to the <see cref="IServiceCollection"/>
-    /// </summary>
-    /// <typeparam name="T">The handler to add</typeparam>
-    /// <param name="services">The services which to add the handler to</param>
-    /// <returns>The <see cref="IServiceCollection"/> for chaining</returns>
-    public static IServiceCollection AddInteractionHandler<T>(this IServiceCollection services) where T : IInteractionModuleBase =>
-        services.AddTransient(services => new InteractionHandlerReference(typeof(T)));
-}
-
-/// <summary>
 /// A handler for subscribing <see cref="IInteractionModuleBase"/> to the discord events.
 /// </summary>
 public interface IInteractionHandler
