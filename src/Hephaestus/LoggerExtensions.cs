@@ -25,12 +25,7 @@ public static class LoggerExtensions
         _ => throw new NotSupportedException($"The LogSeverity {severity} is not currently supported"),
     };
 
-    public static Task LogAsync(this ILogger<DiscordSocketClient> logger, LogMessage message) {
-        logger.Log(message.Severity.MapLogLevel(), message.Exception, "[{Source}] {Message}", message.Source, message.Message);
-        return Task.CompletedTask;
-    }
-
-    public static Task LogAsync(this ILogger<InteractionHandler> logger, LogMessage message) {
+    public static Task LogAsync<T>(this ILogger<T> logger, LogMessage message) {
         logger.Log(message.Severity.MapLogLevel(), message.Exception, "[{Source}] {Message}", message.Source, message.Message);
         return Task.CompletedTask;
     }

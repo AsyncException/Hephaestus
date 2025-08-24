@@ -1,9 +1,5 @@
-
-using System;
 using Discord;
-using Discord.Rest;
 using Discord.WebSocket;
-using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hephaestus.Events;
