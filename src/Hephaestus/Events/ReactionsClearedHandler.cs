@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("ReactionsCleared", GatewayIntents.GuildMessageReactions)]
-public abstract class ReactionsClearedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected ReactionsClearedParameters Context { get; private set; } = default!;
+public abstract partial class ReactionsClearedHandler<THandler> : IEventHandler<THandler> where THandler : ReactionsClearedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (ReactionsClearedParameters)parameters;
-    }
+	public abstract Task Execute(Cacheable<IUserMessage, UInt64> arg0, Cacheable<IMessageChannel, UInt64> arg1);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.ReactionsCleared += (arg1, arg2) => execution(client, services, key, new ReactionsClearedParameters(arg1, arg2));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.ReactionsCleared += services.GetRequiredService<THandler>().Execute;
 }
 
-public record ReactionsClearedParameters(Cacheable<IUserMessage, ulong> UserMessage, Cacheable<IMessageChannel, ulong> MessageChannel) : IEventParameters;

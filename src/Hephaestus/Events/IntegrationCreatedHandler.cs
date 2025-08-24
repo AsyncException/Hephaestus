@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("IntegrationCreated", GatewayIntents.None)]
-public abstract class IntegrationCreatedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected IntegrationCreatedParameters Context { get; private set; } = default!;
+public abstract partial class IntegrationCreatedHandler<THandler> : IEventHandler<THandler> where THandler : IntegrationCreatedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (IntegrationCreatedParameters)parameters;
-    }
+	public abstract Task Execute(IIntegration arg0);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.IntegrationCreated += (arg1) => execution(client, services, key, new IntegrationCreatedParameters(arg1));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.IntegrationCreated += services.GetRequiredService<THandler>().Execute;
 }
 
-public record IntegrationCreatedParameters(IIntegration Integration) : IEventParameters;

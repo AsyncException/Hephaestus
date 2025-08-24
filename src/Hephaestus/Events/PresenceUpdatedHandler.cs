@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("PresenceUpdated", GatewayIntents.GuildPresences)]
-public abstract class PresenceUpdatedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected PresenceUpdatedParameters Context { get; private set; } = default!;
+public abstract partial class PresenceUpdatedHandler<THandler> : IEventHandler<THandler> where THandler : PresenceUpdatedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (PresenceUpdatedParameters)parameters;
-    }
+	public abstract Task Execute(SocketUser arg0, SocketPresence arg1, SocketPresence arg2);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.PresenceUpdated += (arg1, arg2, arg3) => execution(client, services, key, new PresenceUpdatedParameters(arg1, arg2, arg3));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.PresenceUpdated += services.GetRequiredService<THandler>().Execute;
 }
 
-public record PresenceUpdatedParameters(SocketUser SocketUser, SocketPresence OldSocketPresence, SocketPresence SocketPresence) : IEventParameters;

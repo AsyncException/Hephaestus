@@ -1,26 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("ApplicationCommandDeleted", GatewayIntents.None)]
-public abstract class ApplicationCommandDeletedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected ApplicationCommandDeletedParameters Context { get; private set; } = default!;
+public abstract partial class ApplicationCommandDeletedHandler<THandler> : IEventHandler<THandler> where THandler : ApplicationCommandDeletedHandler<THandler> {
 
-    public abstract Task Execute();
+	public abstract Task Execute(SocketApplicationCommand arg0);
 
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (ApplicationCommandDeletedParameters)parameters;
-    }
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
-        client.ApplicationCommandDeleted += (arg1) => execution(client, services, key, new ApplicationCommandDeletedParameters(arg1));
-    }
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.ApplicationCommandDeleted += services.GetRequiredService<THandler>().Execute;
 }
 
-public record ApplicationCommandDeletedParameters(SocketApplicationCommand SocketApplicationCommand) : IEventParameters;

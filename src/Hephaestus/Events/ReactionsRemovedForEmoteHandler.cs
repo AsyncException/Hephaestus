@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("ReactionsRemovedForEmote", GatewayIntents.GuildMessageReactions)]
-public abstract class ReactionsRemovedForEmoteHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected ReactionsRemovedForEmoteParameters Context { get; private set; } = default!;
+public abstract partial class ReactionsRemovedForEmoteHandler<THandler> : IEventHandler<THandler> where THandler : ReactionsRemovedForEmoteHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (ReactionsRemovedForEmoteParameters)parameters;
-    }
+	public abstract Task Execute(Cacheable<IUserMessage, UInt64> arg0, Cacheable<IMessageChannel, UInt64> arg1, IEmote arg2);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.ReactionsRemovedForEmote += (arg1, arg2, arg3) => execution(client, services, key, new ReactionsRemovedForEmoteParameters(arg1, arg2, arg3));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.ReactionsRemovedForEmote += services.GetRequiredService<THandler>().Execute;
 }
 
-public record ReactionsRemovedForEmoteParameters(Cacheable<IUserMessage, ulong> UserMessage, Cacheable<IMessageChannel, ulong> MessageChannel, IEmote Emote) : IEventParameters;

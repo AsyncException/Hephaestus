@@ -1,26 +1,15 @@
-﻿using Discord;
+using Discord;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("ApplicationCommandCreated", GatewayIntents.None)]
-public abstract class ApplicationCommandCreatedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected ApplicationCommandCreatedParameters Context { get; set; } = default!;
+public abstract partial class ApplicationCommandCreatedHandler<THandler> : IEventHandler<THandler> where THandler : ApplicationCommandCreatedHandler<THandler> {
 
-    public abstract Task Execute();
+	public abstract Task Execute(SocketApplicationCommand arg0);
 
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (ApplicationCommandCreatedParameters)parameters;
-    }
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
-        client.ApplicationCommandCreated += async (arg1) => await execution(client, services, key, new ApplicationCommandCreatedParameters(arg1));
-    }
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.ApplicationCommandCreated += services.GetRequiredService<THandler>().Execute;
 }
 
-public record ApplicationCommandCreatedParameters(SocketApplicationCommand SocketApplicationCommand) : IEventParameters;

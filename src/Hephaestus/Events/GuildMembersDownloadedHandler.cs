@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("GuildMembersDownloaded", GatewayIntents.None)]
-public abstract class GuildMembersDownloadedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected GuildMembersDownloadedParameters Context { get; private set; } = default!;
+public abstract partial class GuildMembersDownloadedHandler<THandler> : IEventHandler<THandler> where THandler : GuildMembersDownloadedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (GuildMembersDownloadedParameters)parameters;
-    }
+	public abstract Task Execute(SocketGuild arg0);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.GuildMembersDownloaded += (arg1) => execution(client, services, key, new GuildMembersDownloadedParameters(arg1));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.GuildMembersDownloaded += services.GetRequiredService<THandler>().Execute;
 }
 
-public record GuildMembersDownloadedParameters(SocketGuild SocketGuild) : IEventParameters;

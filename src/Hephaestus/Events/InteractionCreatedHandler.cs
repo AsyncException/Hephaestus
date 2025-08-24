@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("InteractionCreated", GatewayIntents.None)]
-public abstract class InteractionCreatedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected InteractionCreatedParameters Context { get; private set; } = default!;
+public abstract partial class InteractionCreatedHandler<THandler> : IEventHandler<THandler> where THandler : InteractionCreatedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (InteractionCreatedParameters)parameters;
-    }
+	public abstract Task Execute(SocketInteraction arg0);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.InteractionCreated += (arg1) => execution(client, services, key, new InteractionCreatedParameters(arg1));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.InteractionCreated += services.GetRequiredService<THandler>().Execute;
 }
 
-public record InteractionCreatedParameters(SocketInteraction SocketInteraction) : IEventParameters;

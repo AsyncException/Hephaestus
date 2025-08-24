@@ -1,25 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("AuditLogCreated", GatewayIntents.None)]
-public abstract class AuditLogCreatedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected AuditLogCreatedParameters Context { get; set; } = default!;
+public abstract partial class AuditLogCreatedHandler<THandler> : IEventHandler<THandler> where THandler : AuditLogCreatedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (AuditLogCreatedParameters)parameters;
-    }
+	public abstract Task Execute(SocketAuditLogEntry arg0, SocketGuild arg1);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
-        client.AuditLogCreated += (arg1, arg2) => execution(client, services, key, new AuditLogCreatedParameters(arg1, arg2));
-    }
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
+
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.AuditLogCreated += services.GetRequiredService<THandler>().Execute;
 }
 
-public record AuditLogCreatedParameters(SocketAuditLogEntry SocketAuditLogEntry, SocketGuild SocketGuild) : IEventParameters;

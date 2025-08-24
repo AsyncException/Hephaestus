@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("ThreadMemberJoined", GatewayIntents.None)]
-public abstract class ThreadMemberJoinedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected ThreadMemberJoinedParameters Context { get; private set; } = default!;
+public abstract partial class ThreadMemberJoinedHandler<THandler> : IEventHandler<THandler> where THandler : ThreadMemberJoinedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (ThreadMemberJoinedParameters)parameters;
-    }
+	public abstract Task Execute(SocketThreadUser arg0);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.ThreadMemberJoined += (arg1) => execution(client, services, key, new ThreadMemberJoinedParameters(arg1));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.ThreadMemberJoined += services.GetRequiredService<THandler>().Execute;
 }
 
-public record ThreadMemberJoinedParameters(SocketThreadUser SocketThreadUser) : IEventParameters;

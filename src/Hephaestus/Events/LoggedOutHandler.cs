@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("LoggedOut", GatewayIntents.None)]
-public abstract class LoggedOutHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected LoggedOutParameters Context { get; private set; } = default!;
+public abstract partial class LoggedOutHandler<THandler> : IEventHandler<THandler> where THandler : LoggedOutHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (LoggedOutParameters)parameters;
-    }
+	public abstract Task Execute();
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.LoggedOut += () => execution(client, services, key, new LoggedOutParameters());
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.LoggedOut += services.GetRequiredService<THandler>().Execute;
 }
 
-public record LoggedOutParameters() : IEventParameters;

@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("InviteDeleted", GatewayIntents.GuildInvites)]
-public abstract class InviteDeletedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected InviteDeletedParameters Context { get; private set; } = default!;
+public abstract partial class InviteDeletedHandler<THandler> : IEventHandler<THandler> where THandler : InviteDeletedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (InviteDeletedParameters)parameters;
-    }
+	public abstract Task Execute(SocketGuildChannel arg0, String arg1);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.InviteDeleted += (arg1, arg2) => execution(client, services, key, new InviteDeletedParameters(arg1, arg2));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.InviteDeleted += services.GetRequiredService<THandler>().Execute;
 }
 
-public record InviteDeletedParameters(SocketGuildChannel SocketGuildChannel, string DeletedInviteCode) : IEventParameters;

@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("RequestToSpeak", GatewayIntents.None)]
-public abstract class RequestToSpeakHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected RequestToSpeakParameters Context { get; private set; } = default!;
+public abstract partial class RequestToSpeakHandler<THandler> : IEventHandler<THandler> where THandler : RequestToSpeakHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (RequestToSpeakParameters)parameters;
-    }
+	public abstract Task Execute(SocketStageChannel arg0, SocketGuildUser arg1);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.RequestToSpeak += (arg1, arg2) => execution(client, services, key, new RequestToSpeakParameters(arg1, arg2));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.RequestToSpeak += services.GetRequiredService<THandler>().Execute;
 }
 
-public record RequestToSpeakParameters(SocketStageChannel SocketStageChannel, SocketGuildUser SocketGuildUser) : IEventParameters;

@@ -1,28 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("PollVoteAdded", GatewayIntents.GuildMessagePolls)]
-public abstract class PollVoteAddedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected PollVoteAddedParameters Context { get; private set; } = default!;
+public abstract partial class PollVoteAddedHandler<THandler> : IEventHandler<THandler> where THandler : PollVoteAddedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (PollVoteAddedParameters)parameters;
-    }
+	public abstract Task Execute(Cacheable<IUser, UInt64> arg0, Cacheable<ISocketMessageChannel, IRestMessageChannel, IMessageChannel, UInt64> arg1, Cacheable<IUserMessage, UInt64> arg2, Nullable<Cacheable<SocketGuild, RestGuild, IGuild, UInt64>> arg3, UInt64 arg4);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.PollVoteAdded += (arg1, arg2, arg3, arg4, arg5) => execution(client, services, key, new PollVoteAddedParameters(arg1, arg2, arg3, arg4, arg5));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.PollVoteAdded += services.GetRequiredService<THandler>().Execute;
 }
 
-public record PollVoteAddedParameters(Cacheable<IUser, ulong> User, Cacheable<ISocketMessageChannel, IRestMessageChannel, IMessageChannel, ulong> SocketMessageChannel, Cacheable<IUserMessage, ulong> UserMessage, Cacheable<SocketGuild, RestGuild, IGuild, ulong>? SocketGuild, ulong Id) : IEventParameters;

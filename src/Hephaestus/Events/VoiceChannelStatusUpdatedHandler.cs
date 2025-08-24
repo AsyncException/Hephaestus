@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("VoiceChannelStatusUpdated", GatewayIntents.None)]
-public abstract class VoiceChannelStatusUpdatedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected VoiceChannelStatusUpdatedParameters Context { get; private set; } = default!;
+public abstract partial class VoiceChannelStatusUpdatedHandler<THandler> : IEventHandler<THandler> where THandler : VoiceChannelStatusUpdatedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (VoiceChannelStatusUpdatedParameters)parameters;
-    }
+	public abstract Task Execute(Cacheable<SocketVoiceChannel, UInt64> arg0, String arg1, String arg2);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.VoiceChannelStatusUpdated += (arg1, arg2, arg3) => execution(client, services, key, new VoiceChannelStatusUpdatedParameters(arg1, arg2, arg3));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.VoiceChannelStatusUpdated += services.GetRequiredService<THandler>().Execute;
 }
 
-public record VoiceChannelStatusUpdatedParameters(Cacheable<SocketVoiceChannel, ulong> SocketVoiceChannel, string OldState, string State) : IEventParameters;

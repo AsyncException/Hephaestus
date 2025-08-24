@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("MessagesBulkDeleted", GatewayIntents.GuildMessages)]
-public abstract class MessagesBulkDeletedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected MessagesBulkDeletedParameters Context { get; private set; } = default!;
+public abstract partial class MessagesBulkDeletedHandler<THandler> : IEventHandler<THandler> where THandler : MessagesBulkDeletedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (MessagesBulkDeletedParameters)parameters;
-    }
+	public abstract Task Execute(IReadOnlyCollection<Cacheable<IMessage, UInt64>> arg0, Cacheable<IMessageChannel, UInt64> arg1);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.MessagesBulkDeleted += (arg1, arg2) => execution(client, services, key, new MessagesBulkDeletedParameters(arg1, arg2));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.MessagesBulkDeleted += services.GetRequiredService<THandler>().Execute;
 }
 
-public record MessagesBulkDeletedParameters(IReadOnlyCollection<Cacheable<IMessage, ulong>> Messages, Cacheable<IMessageChannel, ulong> MessageChannel) : IEventParameters;

@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("IntegrationDeleted", GatewayIntents.None)]
-public abstract class IntegrationDeletedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected IntegrationDeletedParameters Context { get; private set; } = default!;
+public abstract partial class IntegrationDeletedHandler<THandler> : IEventHandler<THandler> where THandler : IntegrationDeletedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (IntegrationDeletedParameters)parameters;
-    }
+	public abstract Task Execute(IGuild arg0, UInt64 arg1, Optional<UInt64> arg2);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.IntegrationDeleted += (arg1, arg2, arg3) => execution(client, services, key, new IntegrationDeletedParameters(arg1, arg2, arg3));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.IntegrationDeleted += services.GetRequiredService<THandler>().Execute;
 }
 
-public record IntegrationDeletedParameters(IGuild Guild, ulong Id, Optional<ulong> IHaveNoClueAtThisPointPleaseUpdateTheDocumentation) : IEventParameters;

@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("GuildAvailable", GatewayIntents.Guilds)]
-public abstract class GuildAvailableHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected GuildAvailableParameters Context { get; private set; } = default!;
+public abstract partial class GuildAvailableHandler<THandler> : IEventHandler<THandler> where THandler : GuildAvailableHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (GuildAvailableParameters)parameters;
-    }
+	public abstract Task Execute(SocketGuild arg0);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.GuildAvailable += (arg1) => execution(client, services, key, new GuildAvailableParameters(arg1));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.GuildAvailable += services.GetRequiredService<THandler>().Execute;
 }
 
-public record GuildAvailableParameters(SocketGuild SocketGuild) : IEventParameters;

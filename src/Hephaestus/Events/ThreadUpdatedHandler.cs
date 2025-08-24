@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("ThreadUpdated", GatewayIntents.None)]
-public abstract class ThreadUpdatedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected ThreadUpdatedParameters Context { get; private set; } = default!;
+public abstract partial class ThreadUpdatedHandler<THandler> : IEventHandler<THandler> where THandler : ThreadUpdatedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (ThreadUpdatedParameters)parameters;
-    }
+	public abstract Task Execute(Cacheable<SocketThreadChannel, UInt64> arg0, SocketThreadChannel arg1);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.ThreadUpdated += (arg1, arg2) => execution(client, services, key, new ThreadUpdatedParameters(arg1, arg2));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.ThreadUpdated += services.GetRequiredService<THandler>().Execute;
 }
 
-public record ThreadUpdatedParameters(Cacheable<SocketThreadChannel, ulong> OldSocketThreadChannel, SocketThreadChannel SocketThreadChannel) : IEventParameters;

@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("UserBanned", GatewayIntents.GuildBans)]
-public abstract class UserBannedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected UserBannedParameters Context { get; private set; } = default!;
+public abstract partial class UserBannedHandler<THandler> : IEventHandler<THandler> where THandler : UserBannedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (UserBannedParameters)parameters;
-    }
+	public abstract Task Execute(SocketUser arg0, SocketGuild arg1);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.UserBanned += (arg1, arg2) => execution(client, services, key, new UserBannedParameters(arg1, arg2));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.UserBanned += services.GetRequiredService<THandler>().Execute;
 }
 
-public record UserBannedParameters(SocketUser SocketUser, SocketGuild SocketGuild) : IEventParameters;

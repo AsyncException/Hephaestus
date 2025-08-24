@@ -12,11 +12,9 @@ builder.Configuration.AddUserSecrets<Program>();
 #endif
 
 builder.AddHephaestus();
-builder.AddHephaestusModule<AssemblyProvider>();
+builder.AddHephaestusModule<AuditLogModule>();
 
 IHost host = builder.Build();
-
-host.UseHephaestus();
 
 await host.StartAsync();
 await host.WaitForShutdownAsync();

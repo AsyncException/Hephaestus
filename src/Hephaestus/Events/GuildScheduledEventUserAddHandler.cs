@@ -1,28 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("GuildScheduledEventUserAdd", GatewayIntents.GuildScheduledEvents)]
-public abstract class GuildScheduledEventUserAddHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected GuildScheduledEventUserAddParameters Context { get; private set; } = default!;
+public abstract partial class GuildScheduledEventUserAddHandler<THandler> : IEventHandler<THandler> where THandler : GuildScheduledEventUserAddHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (GuildScheduledEventUserAddParameters)parameters;
-    }
+	public abstract Task Execute(Cacheable<SocketUser, RestUser, IUser, UInt64> arg0, SocketGuildEvent arg1);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.GuildScheduledEventUserAdd += (arg1, arg2) => execution(client, services, key, new GuildScheduledEventUserAddParameters(arg1, arg2));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.GuildScheduledEventUserAdd += services.GetRequiredService<THandler>().Execute;
 }
 
-public record GuildScheduledEventUserAddParameters(Cacheable<SocketUser, RestUser, IUser, ulong> User, SocketGuildEvent SocketGuildEvent) : IEventParameters;

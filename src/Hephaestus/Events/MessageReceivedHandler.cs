@@ -1,26 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("MessageReceived", GatewayIntents.GuildMessages, GatewayIntents.MessageContent)]
-public abstract class MessageReceivedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected MessageReceivedParameters Context { get; private set; } = default!;
+public abstract partial class MessageReceivedHandler<THandler> : IEventHandler<THandler> where THandler : MessageReceivedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (MessageReceivedParameters)parameters;
-    }
+	public abstract Task Execute(SocketMessage arg0);
 
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
-        client.MessageReceived += async (arg1) => await execution(client, services, key, new MessageReceivedParameters(arg1));
-    }
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.MessageReceived += services.GetRequiredService<THandler>().Execute;
 }
 
-public record MessageReceivedParameters(SocketMessage SocketMessage) : IEventParameters;

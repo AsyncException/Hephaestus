@@ -1,28 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("PollVoteRemoved", GatewayIntents.GuildMessagePolls)]
-public abstract class PollVoteRemovedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected PollVoteRemovedParameters Context { get; private set; } = default!;
+public abstract partial class PollVoteRemovedHandler<THandler> : IEventHandler<THandler> where THandler : PollVoteRemovedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (PollVoteRemovedParameters)parameters;
-    }
+	public abstract Task Execute(Cacheable<IUser, UInt64> arg0, Cacheable<ISocketMessageChannel, IRestMessageChannel, IMessageChannel, UInt64> arg1, Cacheable<IUserMessage, UInt64> arg2, Nullable<Cacheable<SocketGuild, RestGuild, IGuild, UInt64>> arg3, UInt64 arg4);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.PollVoteRemoved += (arg1, arg2, arg3, arg4, arg5) => execution(client, services, key, new PollVoteRemovedParameters(arg1, arg2, arg3, arg4, arg5));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.PollVoteRemoved += services.GetRequiredService<THandler>().Execute;
 }
 
-public record PollVoteRemovedParameters(Cacheable<IUser, ulong> User, Cacheable<ISocketMessageChannel, IRestMessageChannel, IMessageChannel, ulong> SocketMessageChannel, Cacheable<IUserMessage, ulong> UserMessage, Cacheable<SocketGuild, RestGuild, IGuild, ulong>? SocketGuild, ulong Id) : IEventParameters;

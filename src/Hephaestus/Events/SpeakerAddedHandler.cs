@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("SpeakerAdded", GatewayIntents.None)]
-public abstract class SpeakerAddedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected SpeakerAddedParameters Context { get; private set; } = default!;
+public abstract partial class SpeakerAddedHandler<THandler> : IEventHandler<THandler> where THandler : SpeakerAddedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (SpeakerAddedParameters)parameters;
-    }
+	public abstract Task Execute(SocketStageChannel arg0, SocketGuildUser arg1);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.SpeakerAdded += (arg1, arg2) => execution(client, services, key, new SpeakerAddedParameters(arg1, arg2));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.SpeakerAdded += services.GetRequiredService<THandler>().Execute;
 }
 
-public record SpeakerAddedParameters(SocketStageChannel SocketStageChannel, SocketGuildUser SocketGuildUser) : IEventParameters;

@@ -1,0 +1,457 @@
+[
+  {
+    "name": "ApplicationCommandCreated",
+    "parameters": [ "SocketApplicationCommand" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ApplicationCommandDeleted",
+    "parameters": [ "SocketApplicationCommand" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ApplicationCommandUpdated",
+    "parameters": [ "SocketApplicationCommand" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "AuditLogCreated",
+    "parameters": [ "SocketAuditLogEntry", "SocketGuild" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "AutocompleteExecuted",
+    "parameters": [ "SocketAutocompleteInteraction" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "AutoModActionExecuted",
+    "parameters": [ "SocketGuild", "AutoModRuleAction", "AutoModActionExecutedData" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "AutoModRuleCreated",
+    "parameters": [ "SocketAutoModRule" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "AutoModRuleDeleted",
+    "parameters": [ "SocketAutoModRule" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "AutoModRuleUpdated",
+    "parameters": [ "Cacheable<SocketAutoModRule, UInt64>", "SocketAutoModRule" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ButtonExecuted",
+    "parameters": [ "SocketMessageComponent" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ChannelCreated",
+    "parameters": [ "SocketChannel" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ChannelDestroyed",
+    "parameters": [ "SocketChannel" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ChannelUpdated",
+    "parameters": [ "SocketChannel", "SocketChannel" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "CurrentUserUpdated",
+    "parameters": [ "SocketSelfUser", "SocketSelfUser" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "EntitlementCreated",
+    "parameters": [ "SocketEntitlement" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "EntitlementDeleted",
+    "parameters": [ "Cacheable<SocketEntitlement, UInt64>" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "EntitlementUpdated",
+    "parameters": [ "Cacheable<SocketEntitlement, UInt64>", "SocketEntitlement" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildAvailable",
+    "parameters": [ "SocketGuild" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildJoinRequestDeleted",
+    "parameters": [ "Cacheable<SocketGuildUser, UInt64>", "SocketGuild" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildMembersDownloaded",
+    "parameters": [ "SocketGuild" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildMemberUpdated",
+    "parameters": [ "Cacheable<SocketGuildUser, UInt64>", "SocketGuildUser" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildScheduledEventCancelled",
+    "parameters": [ "SocketGuildEvent" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildScheduledEventCompleted",
+    "parameters": [ "SocketGuildEvent" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildScheduledEventCreated",
+    "parameters": [ "SocketGuildEvent" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildScheduledEventStarted",
+    "parameters": [ "SocketGuildEvent" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildScheduledEventUpdated",
+    "parameters": [ "Cacheable<SocketGuildEvent, UInt64>", "SocketGuildEvent" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildScheduledEventUserAdd",
+    "parameters": [ "Cacheable<SocketUser, RestUser, IUser, UInt64>", "SocketGuildEvent" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildScheduledEventUserRemove",
+    "parameters": [ "Cacheable<SocketUser, RestUser, IUser, UInt64>", "SocketGuildEvent" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildStickerCreated",
+    "parameters": [ "SocketCustomSticker" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildStickerDeleted",
+    "parameters": [ "SocketCustomSticker" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildStickerUpdated",
+    "parameters": [ "SocketCustomSticker", "SocketCustomSticker" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildUnavailable",
+    "parameters": [ "SocketGuild" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "GuildUpdated",
+    "parameters": [ "SocketGuild", "SocketGuild" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "IntegrationCreated",
+    "parameters": [ "IIntegration" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "IntegrationDeleted",
+    "parameters": [ "IGuild", "UInt64", "Optional<UInt64>" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "IntegrationUpdated",
+    "parameters": [ "IIntegration" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "InteractionCreated",
+    "parameters": [ "SocketInteraction" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "InviteCreated",
+    "parameters": [ "SocketInvite" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "InviteDeleted",
+    "parameters": [ "SocketGuildChannel", "String" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "JoinedGuild",
+    "parameters": [ "SocketGuild" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "LeftGuild",
+    "parameters": [ "SocketGuild" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "Log",
+    "parameters": [ "LogMessage" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "LoggedIn",
+    "parameters": [],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "LoggedOut",
+    "parameters": [],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "MessageCommandExecuted",
+    "parameters": [ "SocketMessageCommand" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "MessageDeleted",
+    "parameters": [ "Cacheable<IMessage, UInt64>", "Cacheable<IMessageChannel, UInt64>" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "MessageReceived",
+    "parameters": [ "SocketMessage" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "MessagesBulkDeleted",
+    "parameters": [ "IReadOnlyCollection<Cacheable<IMessage, UInt64>>", "Cacheable<IMessageChannel, UInt64>" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "MessageUpdated",
+    "parameters": [ "Cacheable<IMessage, UInt64>", "SocketMessage", "ISocketMessageChannel" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ModalSubmitted",
+    "parameters": [ "SocketModal" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "PollVoteAdded",
+    "parameters": [ "Cacheable<IUser, UInt64>", "Cacheable<ISocketMessageChannel, IRestMessageChannel, IMessageChannel, UInt64>", "Cacheable<IUserMessage, UInt64>", "Nullable<Cacheable<SocketGuild, RestGuild, IGuild, UInt64>>", "UInt64" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "PollVoteRemoved",
+    "parameters": [ "Cacheable<IUser, UInt64>", "Cacheable<ISocketMessageChannel, IRestMessageChannel, IMessageChannel, UInt64>", "Cacheable<IUserMessage, UInt64>", "Nullable<Cacheable<SocketGuild, RestGuild, IGuild, UInt64>>", "UInt64" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "PresenceUpdated",
+    "parameters": [ "SocketUser", "SocketPresence", "SocketPresence" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ReactionAdded",
+    "parameters": [ "Cacheable<IUserMessage, UInt64>", "Cacheable<IMessageChannel, UInt64>", "SocketReaction" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ReactionRemoved",
+    "parameters": [ "Cacheable<IUserMessage, UInt64>", "Cacheable<IMessageChannel, UInt64>", "SocketReaction" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ReactionsCleared",
+    "parameters": [ "Cacheable<IUserMessage, UInt64>", "Cacheable<IMessageChannel, UInt64>" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ReactionsRemovedForEmote",
+    "parameters": [ "Cacheable<IUserMessage, UInt64>", "Cacheable<IMessageChannel, UInt64>", "IEmote" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "RecipientAdded",
+    "parameters": [ "SocketGroupUser" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "RecipientRemoved",
+    "parameters": [ "SocketGroupUser" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "RequestToSpeak",
+    "parameters": [ "SocketStageChannel", "SocketGuildUser" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "RoleCreated",
+    "parameters": [ "SocketRole" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "RoleDeleted",
+    "parameters": [ "SocketRole" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "RoleUpdated",
+    "parameters": [ "SocketRole", "SocketRole" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "SelectMenuExecuted",
+    "parameters": [ "SocketMessageComponent" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "SentRequest",
+    "parameters": [ "String", "String", "Double" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "SlashCommandExecuted",
+    "parameters": [ "SocketSlashCommand" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "SpeakerAdded",
+    "parameters": [ "SocketStageChannel", "SocketGuildUser" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "SpeakerRemoved",
+    "parameters": [ "SocketStageChannel", "SocketGuildUser" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "StageEnded",
+    "parameters": [ "SocketStageChannel" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "StageStarted",
+    "parameters": [ "SocketStageChannel" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "StageUpdated",
+    "parameters": [ "SocketStageChannel", "SocketStageChannel" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "SubscriptionCreated",
+    "parameters": [ "SocketSubscription" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "SubscriptionDeleted",
+    "parameters": [ "Cacheable<SocketSubscription, UInt64>" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "SubscriptionUpdated",
+    "parameters": [ "Cacheable<SocketSubscription, UInt64>", "SocketSubscription" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ThreadCreated",
+    "parameters": [ "SocketThreadChannel" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ThreadDeleted",
+    "parameters": [ "Cacheable<SocketThreadChannel, UInt64>" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ThreadMemberJoined",
+    "parameters": [ "SocketThreadUser" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ThreadMemberLeft",
+    "parameters": [ "SocketThreadUser" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "ThreadUpdated",
+    "parameters": [ "Cacheable<SocketThreadChannel, UInt64>", "SocketThreadChannel" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "UnknownDispatchReceived",
+    "parameters": [ "String", "JToken" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "UserBanned",
+    "parameters": [ "SocketUser", "SocketGuild" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "UserCommandExecuted",
+    "parameters": [ "SocketUserCommand" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "UserIsTyping",
+    "parameters": [ "Cacheable<IUser, UInt64>", "Cacheable<IMessageChannel, UInt64>" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "UserJoined",
+    "parameters": [ "SocketGuildUser" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "UserLeft",
+    "parameters": [ "SocketGuild", "SocketUser" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "UserUnbanned",
+    "parameters": [ "SocketUser", "SocketGuild" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "UserUpdated",
+    "parameters": [ "SocketUser", "SocketUser" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "UserVoiceStateUpdated",
+    "parameters": [ "SocketUser", "SocketVoiceState", "SocketVoiceState" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "VoiceChannelStatusUpdated",
+    "parameters": [ "Cacheable<SocketVoiceChannel, UInt64>", "String", "String" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "VoiceServerUpdated",
+    "parameters": [ "SocketVoiceServer" ],
+    "intents": [ "None" ]
+  },
+  {
+    "name": "WebhooksUpdated",
+    "parameters": [ "SocketGuild", "SocketChannel" ],
+    "intents": [ "None" ]
+  }
+]

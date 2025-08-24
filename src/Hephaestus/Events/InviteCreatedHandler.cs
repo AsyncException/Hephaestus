@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("InviteCreated", GatewayIntents.GuildInvites)]
-public abstract class InviteCreatedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected InviteCreatedParameters Context { get; private set; } = default!;
+public abstract partial class InviteCreatedHandler<THandler> : IEventHandler<THandler> where THandler : InviteCreatedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (InviteCreatedParameters)parameters;
-    }
+	public abstract Task Execute(SocketInvite arg0);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.InviteCreated += (arg1) => execution(client, services, key, new InviteCreatedParameters(arg1));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.InviteCreated += services.GetRequiredService<THandler>().Execute;
 }
 
-public record InviteCreatedParameters(SocketInvite SocketInvite) : IEventParameters;

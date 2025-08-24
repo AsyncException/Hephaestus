@@ -1,7 +1,7 @@
 ﻿{
   "Hephaestus": {
     "Token": "Enter bot token here",
-    "Server": "Server id when SingleServerMode is enabled",
+    "Server": 9999999999999999999,
     "SingleServerMode": false,
     "SkipEventIntentCheck": false,
     "GatewayIntents": [

@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("SpeakerRemoved", GatewayIntents.None)]
-public abstract class SpeakerRemovedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected SpeakerRemovedParameters Context { get; private set; } = default!;
+public abstract partial class SpeakerRemovedHandler<THandler> : IEventHandler<THandler> where THandler : SpeakerRemovedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (SpeakerRemovedParameters)parameters;
-    }
+	public abstract Task Execute(SocketStageChannel arg0, SocketGuildUser arg1);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.SpeakerRemoved += (arg1, arg2) => execution(client, services, key, new SpeakerRemovedParameters(arg1, arg2));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.SpeakerRemoved += services.GetRequiredService<THandler>().Execute;
 }
 
-public record SpeakerRemovedParameters(SocketStageChannel SocketStageChannel, SocketGuildUser SocketGuildUser) : IEventParameters;

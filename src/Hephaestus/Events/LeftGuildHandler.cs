@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("LeftGuild", GatewayIntents.None)]
-public abstract class LeftGuildHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected LeftGuildParameters Context { get; private set; } = default!;
+public abstract partial class LeftGuildHandler<THandler> : IEventHandler<THandler> where THandler : LeftGuildHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (LeftGuildParameters)parameters;
-    }
+	public abstract Task Execute(SocketGuild arg0);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.LeftGuild += (arg1) => execution(client, services, key, new LeftGuildParameters(arg1));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.LeftGuild += services.GetRequiredService<THandler>().Execute;
 }
 
-public record LeftGuildParameters(SocketGuild SocketGuild) : IEventParameters;

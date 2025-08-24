@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("RoleCreated", GatewayIntents.Guilds)]
-public abstract class RoleCreatedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected RoleCreatedParameters Context { get; private set; } = default!;
+public abstract partial class RoleCreatedHandler<THandler> : IEventHandler<THandler> where THandler : RoleCreatedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (RoleCreatedParameters)parameters;
-    }
+	public abstract Task Execute(SocketRole arg0);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.RoleCreated += (arg1) => execution(client, services, key, new RoleCreatedParameters(arg1));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.RoleCreated += services.GetRequiredService<THandler>().Execute;
 }
 
-public record RoleCreatedParameters(SocketRole SocketRole) : IEventParameters;

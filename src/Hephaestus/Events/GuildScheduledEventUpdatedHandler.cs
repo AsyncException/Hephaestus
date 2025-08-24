@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("GuildScheduledEventUpdated", GatewayIntents.GuildScheduledEvents)]
-public abstract class GuildScheduledEventUpdatedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected GuildScheduledEventUpdatedParameters Context { get; private set; } = default!;
+public abstract partial class GuildScheduledEventUpdatedHandler<THandler> : IEventHandler<THandler> where THandler : GuildScheduledEventUpdatedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (GuildScheduledEventUpdatedParameters)parameters;
-    }
+	public abstract Task Execute(Cacheable<SocketGuildEvent, UInt64> arg0, SocketGuildEvent arg1);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.GuildScheduledEventUpdated += (arg1, arg2) => execution(client, services, key, new GuildScheduledEventUpdatedParameters(arg1, arg2));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.GuildScheduledEventUpdated += services.GetRequiredService<THandler>().Execute;
 }
 
-public record GuildScheduledEventUpdatedParameters(Cacheable<SocketGuildEvent, ulong> OldSocketGuildEvent, SocketGuildEvent SocketGuildEvent) : IEventParameters;

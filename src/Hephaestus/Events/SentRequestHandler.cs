@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("SentRequest", GatewayIntents.None)]
-public abstract class SentRequestHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected SentRequestParameters Context { get; private set; } = default!;
+public abstract partial class SentRequestHandler<THandler> : IEventHandler<THandler> where THandler : SentRequestHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (SentRequestParameters)parameters;
-    }
+	public abstract Task Execute(String arg0, String arg1, Double arg2);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.SentRequest += (arg1, arg2, arg3) => execution(client, services, key, new SentRequestParameters(arg1, arg2, arg3));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.SentRequest += services.GetRequiredService<THandler>().Execute;
 }
 
-public record SentRequestParameters(string Method, string Endpoint, double CompletionTime) : IEventParameters;

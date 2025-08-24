@@ -1,28 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("GuildScheduledEventUserRemove", GatewayIntents.GuildScheduledEvents)]
-public abstract class GuildScheduledEventUserRemoveHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected GuildScheduledEventUserRemoveParameters Context { get; private set; } = default!;
+public abstract partial class GuildScheduledEventUserRemoveHandler<THandler> : IEventHandler<THandler> where THandler : GuildScheduledEventUserRemoveHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (GuildScheduledEventUserRemoveParameters)parameters;
-    }
+	public abstract Task Execute(Cacheable<SocketUser, RestUser, IUser, UInt64> arg0, SocketGuildEvent arg1);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.GuildScheduledEventUserRemove += (arg1, arg2) => execution(client, services, key, new GuildScheduledEventUserRemoveParameters(arg1, arg2));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.GuildScheduledEventUserRemove += services.GetRequiredService<THandler>().Execute;
 }
 
-public record GuildScheduledEventUserRemoveParameters(Cacheable<SocketUser, RestUser, IUser, ulong> User, SocketGuildEvent SocketGuildEvent) : IEventParameters;

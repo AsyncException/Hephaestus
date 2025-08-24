@@ -2,21 +2,30 @@
 using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
-using Hephaestus.Extensions;
-using Hephaestus.InteractionHandling;
-using Hephaestus.Models;
-using Hephaestus.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Serilog;
 using Serilog.Events;
+using Serilog;
 
 namespace Hephaestus;
 
-public static class IHostApplicationBuilderExtensions
+/// <summary>
+/// An interface for creating HephaestusModules. These module can be registered <see cref=""/>
+/// </summary>
+/// <typeparam name="TModule">The module thats inheriting this interface</typeparam>
+public interface IHephaestusModule<TModule> where TModule : IHephaestusModule<TModule>
+{
+    /// <summary>
+    /// An entry point for registering additional services and the <see cref="IEventHandler{THandler}"/> using <see cref="HephaestusEventHandlerExtensions.AddEventHandler{T}(IServiceCollection)"/> and <see cref="IInteractionModuleBase"/> using <see cref="HephaestusInteractionHandlerExtensions.AddInteractionHandler{T}(IServiceCollection)"/>. THis service also needs to be registered in your primary application using <see cref="HepaestusExtentions.AddHephaestusModule{T}(IHostApplicationBuilder)"/>
+    /// </summary>
+    /// <param name="configuration">The application configuration</param>
+    /// <param name="services">The servicecollection</param>
+    public static abstract void RegisterServices(IConfiguration configuration, IServiceCollection services);
+}
+
+public static class HepaestusExtentions
 {
     /// <summary>
     /// Add required settings and services for Hephaestus to work correctly. To register modules use <seealso cref="AddHephaestusModule{T}"/>
@@ -40,7 +49,7 @@ public static class IHostApplicationBuilderExtensions
         builder.ConfigureServices();
 
         //Add configuration
-        builder.Services.AddTransient((services) => {
+        builder.Services.AddTransient((IServiceProvider services) => {
             IConfiguration configuration = services.GetRequiredService<IConfiguration>();
 
             HephaestusConfiguration config = null!;
@@ -78,29 +87,7 @@ public static class IHostApplicationBuilderExtensions
     /// <returns>The original <seealso cref="IHostApplicationBuilder"/> for chaining</returns>
     /// <exception cref="InvalidOperationException">Gets thrown if the <paramref name="configurationSection"/> is set but was not found</exception>
     /// <exception cref="NullReferenceException">Gets thrown if the <paramref name="configurationSection"/> is set and the key was found but contained no values or incorrect values</exception>
-    public static IHostApplicationBuilder AddHephaestus(this IHostApplicationBuilder builder, string? configurationSection = null) {
-        builder.ConfigureLogging();
-        builder.ConfigureServices();
-
-        builder.Services.AddTransient((services) => {
-            IConfiguration configuration = services.GetRequiredService<IConfiguration>();
-
-            if(configurationSection is null) {
-                IConfigurationSection section = configuration.GetSection("Hephaestus");
-                HephaestusConfiguration config = section.Get<HephaestusConfiguration>() ?? new();
-                return config;
-            }
-            else {
-                //If a user gives a configuration section key it should always return a configuration because its expected to be there.
-                IConfigurationSection section = configuration.GetRequiredSection(configurationSection);
-                HephaestusConfiguration config = section.Get<HephaestusConfiguration>() 
-                    ?? throw new NullReferenceException($"The configuration section with key \"{configurationSection}\" return a null configuration after deserializing.");
-                return config;
-            }
-        });
-
-        return builder;
-    }
+    public static IHostApplicationBuilder AddHephaestus(this IHostApplicationBuilder builder, string? configurationSection = null) => AddHephaestus(builder, static config => { }, configurationSection);
 
     /// <summary>
     /// Adds Serilog as logging provider and apply default overrides and formatting.
@@ -142,9 +129,9 @@ public static class IHostApplicationBuilderExtensions
         });
         builder.Services.AddSingleton<DiscordRestClient>(static e => e.GetRequiredService<DiscordSocketClient>().Rest);
         builder.Services.AddSingleton<InteractionService>();
-        builder.Services.AddSingleton<InteractionHandler>();
-        builder.Services.AddSingleton<EventSubscriptionHandler>();
         builder.Services.AddSingleton<CommandService>();
+        builder.Services.AddSingleton<IInteractionHandler, InteractionHandler>();
+        builder.Services.AddSingleton<IEventSubscriptionHandler, EventSubscriptionHandler>();
 
         return builder;
     }
@@ -155,14 +142,8 @@ public static class IHostApplicationBuilderExtensions
     /// <typeparam name="T"></typeparam>
     /// <param name="host_builder"></param>
     /// <returns></returns>
-    public static IHostApplicationBuilder AddHephaestusModule<T>(this IHostApplicationBuilder host_builder) where T : class, IAssemblyProvider, new() {
-        new T().OptionalModules(host_builder);
-        host_builder.Services.AddSingleton<IAssemblyProvider, T>();
-
-        foreach (Type eventHandler in new TypeFinder<T>().IsNotAbstract().Inherits<IEventHandler>().HasAttribute<EventHandlerAttribute>()) {
-            host_builder.Services.AddKeyedTransient(typeof(IEventHandler), eventHandler.GUID, eventHandler);
-        }
-
+    public static IHostApplicationBuilder AddHephaestusModule<T>(this IHostApplicationBuilder host_builder) where T : IHephaestusModule<T>, new() {
+        T.RegisterServices(host_builder.Configuration, host_builder.Services);
         return host_builder;
     }
 }

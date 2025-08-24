@@ -1,24 +1,19 @@
-﻿using Discord;using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
 
-namespace Hephaestus;
+using System;
+using Discord;
+using Discord.Rest;
+using Discord.WebSocket;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-//TODO: Add documentation and intents check
-[EventHandler("ApplicationCommandUpdated", GatewayIntents.None)]
-public abstract class ApplicationCommandUpdatedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected ApplicationCommandUpdatedParameters Context { get; private set; } = default!;
+namespace Hephaestus.Events;
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (ApplicationCommandUpdatedParameters)parameters;
-    }
+public abstract partial class ApplicationCommandUpdatedHandler<THandler> : IEventHandler<THandler> where THandler : ApplicationCommandUpdatedHandler<THandler> {
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
-        client.ApplicationCommandUpdated += (arg1) => execution(client, services, key, new ApplicationCommandUpdatedParameters(arg1));
-    }
+	public abstract Task Execute(SocketApplicationCommand arg0);
+
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
+
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.ApplicationCommandUpdated += services.GetRequiredService<THandler>().Execute;
 }
 
-public record ApplicationCommandUpdatedParameters(SocketApplicationCommand SocketApplicationCommand) : IEventParameters;

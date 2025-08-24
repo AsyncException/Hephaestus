@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("EntitlementUpdated", GatewayIntents.None)]
-public abstract class EntitlementUpdatedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected EntitlementUpdatedParameters Context { get; private set; } = default!;
+public abstract partial class EntitlementUpdatedHandler<THandler> : IEventHandler<THandler> where THandler : EntitlementUpdatedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (EntitlementUpdatedParameters)parameters;
-    }
+	public abstract Task Execute(Cacheable<SocketEntitlement, UInt64> arg0, SocketEntitlement arg1);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.EntitlementUpdated += (arg1, arg2) => execution(client, services, key, new EntitlementUpdatedParameters(arg1, arg2));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.EntitlementUpdated += services.GetRequiredService<THandler>().Execute;
 }
 
-public record EntitlementUpdatedParameters(Cacheable<SocketEntitlement, ulong> OldSocketEntitlement, SocketEntitlement SocketEntitlement) : IEventParameters;

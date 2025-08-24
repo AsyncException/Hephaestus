@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("StageEnded", GatewayIntents.None)]
-public abstract class StageEndedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected StageEndedParameters Context { get; private set; } = default!;
+public abstract partial class StageEndedHandler<THandler> : IEventHandler<THandler> where THandler : StageEndedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (StageEndedParameters)parameters;
-    }
+	public abstract Task Execute(SocketStageChannel arg0);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.StageEnded += (arg1) => execution(client, services, key, new StageEndedParameters(arg1));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.StageEnded += services.GetRequiredService<THandler>().Execute;
 }
 
-public record StageEndedParameters(SocketStageChannel SocketStageChannel) : IEventParameters;

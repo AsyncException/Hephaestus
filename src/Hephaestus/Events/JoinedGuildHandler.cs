@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("JoinedGuild", GatewayIntents.None)]
-public abstract class JoinedGuildHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected JoinedGuildParameters Context { get; private set; } = default!;
+public abstract partial class JoinedGuildHandler<THandler> : IEventHandler<THandler> where THandler : JoinedGuildHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (JoinedGuildParameters)parameters;
-    }
+	public abstract Task Execute(SocketGuild arg0);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.JoinedGuild += (arg1) => execution(client, services, key, new JoinedGuildParameters(arg1));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.JoinedGuild += services.GetRequiredService<THandler>().Execute;
 }
 
-public record JoinedGuildParameters(SocketGuild SocketGuild) : IEventParameters;

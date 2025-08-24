@@ -1,25 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("AutoModRuleCreated", GatewayIntents.AutoModerationConfiguration)]
-public abstract class AutoModRuleCreatedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected AutoModRuleCreatedParameters Context { get; private set; } = default!;
+public abstract partial class AutoModRuleCreatedHandler<THandler> : IEventHandler<THandler> where THandler : AutoModRuleCreatedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (AutoModRuleCreatedParameters)parameters;
-    }
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
-        client.AutoModRuleCreated += (arg1) => execution(client, services, key, new AutoModRuleCreatedParameters(arg1));
-    }
+	public abstract Task Execute(SocketAutoModRule arg0);
 
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
+
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.AutoModRuleCreated += services.GetRequiredService<THandler>().Execute;
 }
 
-public record AutoModRuleCreatedParameters(SocketAutoModRule SocketAutoModRule) : IEventParameters;

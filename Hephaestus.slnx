@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Examples/">
+    <Project Path="samples/Hephaestus.Sample.AspNet/Hephaestus.Sample.AspNet.csproj" />
+    <Project Path="samples/Hephaestus.Sample.Hosting/Hephaestus.Sample.Hosting.csproj" />
+    <Project Path="samples/Hephaestus.Sample.Module.AuditLog.AspNet/Hephaestus.Sample.Module.AuditLog.AspNet.csproj" />
+    <Project Path="samples/Hephaestus.Sample.Module.AuditLog.Hosting/Hephaestus.Sample.Module.AuditLog.Hosting.csproj" />
+  </Folder>
+  <Project Path="src/Hephaestus/Hephaestus.csproj" />
+</Solution>

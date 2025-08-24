@@ -1,27 +1,19 @@
-﻿using Discord;
+
+using System;
+using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
-using Hephaestus.Events.EventHandling;
+using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hephaestus;
+namespace Hephaestus.Events;
 
-//TODO: Add documentation and intents check
-[EventHandler("GuildJoinRequestDeleted", GatewayIntents.None)]
-public abstract class GuildJoinRequestDeletedHandler : IEventHandler
-{
-    protected DiscordSocketClient Client { get; private set; } = default!;
-    protected GuildJoinRequestDeletedParameters Context { get; private set; } = default!;
+public abstract partial class GuildJoinRequestDeletedHandler<THandler> : IEventHandler<THandler> where THandler : GuildJoinRequestDeletedHandler<THandler> {
 
-    public abstract Task Execute();
-    public void PrepareContext(DiscordSocketClient client, IEventParameters parameters) {
-        Client = client;
-        Context = (GuildJoinRequestDeletedParameters)parameters;
-    }
+	public abstract Task Execute(Cacheable<SocketGuildUser, UInt64> arg0, SocketGuild arg1);
 
-    public static void Bind(DiscordSocketClient client, IServiceProvider services, Guid key, Func<DiscordSocketClient, IServiceProvider, Guid, IEventParameters, Task> execution) {
+	static GatewayIntents[] IEventHandler<THandler>.RequiredIntents { get; } = [ GatewayIntents.None ];
 
-        client.GuildJoinRequestDeleted += (arg1, arg2) => execution(client, services, key, new GuildJoinRequestDeletedParameters(arg1, arg2));
-    }
-
+	static void IEventHandler<THandler>.RegisterToClient(DiscordSocketClient client, IServiceProvider services) => client.GuildJoinRequestDeleted += services.GetRequiredService<THandler>().Execute;
 }
 
-public record GuildJoinRequestDeletedParameters(Cacheable<SocketGuildUser, ulong> SocketGuildUser, SocketGuild SocketGuild) : IEventParameters;
